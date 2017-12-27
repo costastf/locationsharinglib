@@ -1,0 +1,50 @@
+stages:
+  - lint
+  - test
+  - build
+  - upload
+  - docs
+
+lint:
+  tags:
+    - docker
+  stage: lint
+  image: PATH_TO_RUNNER
+  script:
+    - _CI/scripts/lint
+
+test:
+  tags:
+    - docker
+  stage: test
+  image: PATH_TO_RUNNER
+  script:
+    - _CI/scripts/test
+
+build:
+  tags:
+    - docker
+  stage: build
+  image: PATH_TO_RUNNER
+  script:
+    - _CI/scripts/build
+
+upload:
+  tags:
+    - docker
+  stage: upload
+  image: PATH_TO_RUNNER
+  only:
+    - tags
+  script:
+    - _CI/scripts/upload
+
+docs:
+  tags:
+    - docker
+  stage: docs
+  image: PATH_TO_RUNNER
+  only:
+    - tags
+  script:
+    - _CI/scripts/document

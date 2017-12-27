@@ -1,0 +1,17 @@
+include .VERSION
+include AUTHORS.rst
+include CONTRIBUTING.rst
+include HISTORY.rst
+include LICENSE
+include README.rst
+include USAGE.rst
+include Pipfile
+include Pipfile.lock
+include requirements.txt
+include dev-requirements.txt
+include locationsharinglib/.VERSION
+
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+
+recursive-include docs *.rst conf.py Makefile

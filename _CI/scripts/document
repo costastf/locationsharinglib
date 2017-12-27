@@ -1,0 +1,20 @@
+#!/bin/bash --login
+cd $(dirname $0)/../..
+
+. _CI/scripts/bootstrap
+
+rm -f docs/test_docs.rst
+rm -f docs/modules.rst
+rm -rf _build docs/_build
+
+echo "Running make docs.."
+
+pipenv run make -C docs html && \
+mv -v docs/_build _build
+exit_code=$?
+if ([ $exit_code != 0 ])
+then
+    echo "Failed building documentation"
+    exit exit_code
+fi
+open _build/html/index.html 2> /dev/null || xdg-open _build/html/index.html 2> /dev/null

@@ -1,0 +1,6 @@
+[FORMAT]
+max-line-length=121
+disable=locally-disabled, locally-enabled, logging-format-interpolation
+
+[General]
+init-hook='import sys; sys.path.append("locationsharinglib")'

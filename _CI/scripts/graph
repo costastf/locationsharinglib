@@ -1,0 +1,10 @@
+#!/bin/bash --login
+cd $(dirname $0)/../..
+
+. _CI/scripts/bootstrap
+
+
+cd graphs
+pipenv run pyreverse -o png -A -f PUB_ONLY -p graphs ../locationsharinglib
+
+echo "You should have class and package graphs under the graphs directory"

@@ -1,0 +1,29 @@
+#!/bin/bash --login
+cd $(dirname $0)/../..
+set -e
+
+function check {
+    if ([ "_$(git rev-parse --abbrev-ref HEAD)" != "_master" ])
+    then
+        echo "Tagging is only supported on master, you should not tag a branch"
+        exit -1
+    fi
+}
+
+function push {
+    echo "Tagging and pushing"
+    git commit -m "Set version to $(cat .VERSION)" .VERSION
+    git tag "$(cat .VERSION)"
+    git push
+    git push origin "$(cat .VERSION)"
+}
+case "$1" in
+    major) check; ./_CI/bin/bump.py --major ;push ;;
+    minor) check; ./_CI/bin/bump.py --minor ;push ;;
+    patch) check; ./_CI/bin/bump.py --patch ;push ;;
+    "") ./_CI/bin/bump.py ;;
+    *)
+        echo "Syntax: $0 [--major|--minor|--patch]"
+        echo "If you don't supply any arguments, this will return the version"
+        ;;
+esac
