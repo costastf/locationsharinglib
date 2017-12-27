@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "3f8f9b920a6956c4abdfb1e1990537635867c33eaf1e2d700e4699e172fa0b29"
+            "sha256": "c4f9238cfdded77ec10b8f09c8ecefb64c9e4c57abfdfc346aaeeeaf8838143c"
         },
         "host-environment-markers": {
             "implementation_name": "cpython",
@@ -34,12 +34,6 @@
                 "sha256:808b6ac932dccb0a4126558f7dfdcf41710dd44a4ef497a0bb59a77f9f078e89"
             ],
             "version": "==4.6.0"
-        },
-        "bs4": {
-            "hashes": [
-                "sha256:36ecea1fd7cc5c0c6e4a1ff075df26d50da647b75376626cc186e2212886dd3a"
-            ],
-            "version": "==0.0.1"
         },
         "cachetools": {
             "hashes": [
@@ -118,7 +112,7 @@
                 "sha256:4ba998e881f285c1d1b73f5b6e3766539b4e162320f9589334400c5ddc35198c",
                 "sha256:31f235852f88edc1558d428d890663c49eb4514ffec9f3650e7f3c9e4a12e36f"
             ],
-            "markers": "python_version == '2.7'",
+            "markers": "python_version < '3.4'",
             "version": "==1.4"
         },
         "backports.shutil-get-terminal-size": {

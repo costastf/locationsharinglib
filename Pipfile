@@ -21,5 +21,5 @@ hypothesis = "*"
 [packages]
 
 requests = "*"
-bs4 = "*"
+beautifulsoup4 = "*"
 cachetools = "*"
