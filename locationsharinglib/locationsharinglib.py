@@ -202,7 +202,7 @@ class Service(object):
             raise InvalidCredentials
 
     def _logout(self):
-        url = 'http://www.google.com/accounts/Logout'
+        url = '{login_url}/Logout'.format(login_url=self._login_url)
         response = self._session.get(url)
         return response.ok
 
