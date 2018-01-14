@@ -8,4 +8,5 @@ To use locationsharinglib in a project:
 
     from locationsharinglib import Service
     service = Service(username, password)
-    print(service.get_person_by_nickname('nick_name'))
+    for person in service.get_all_people():
+        print(person)
