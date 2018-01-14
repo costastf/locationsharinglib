@@ -202,7 +202,7 @@ class Service(object):
             raise InvalidCredentials
 
     def _logout(self):
-        url = '{login_url}/Logout/'.format(login_url=self._login_url)
+        url = 'http://www.google.com/accounts/Logout'
         response = self._session.get(url)
         return response.ok
 
@@ -218,12 +218,15 @@ class Service(object):
     def _get_data(self):
         payload = {'authuser': 0,
                    'hl': 'en',
-                   'gl': 'nl',
-                   'pb': ('!1e1!2m2!1slDk4Wvv-'
-                          'LZHBsAfhp7HICw!7e81!7BCN7z4NEFEAAaUgDFTkMr_sas-'
-                          'giNQWxPnSTC514--'
-                          'EALhedHGKpC1jINBf0PyAQ9pAvOYyYkXPhNchY_'
-                          'ww13f371XVtdnc3Fy2ig8pDCCW2aJcb8Wyl3RJKl1-E')}
+                   'gl': 'en',
+                   # pd holds the information about the rendering of the map and
+                   # it is irrelevant with the location sharing capabilities.
+                   # the below info points to google's headquarters.
+                   'pb': ('!1m7!8m6!1m3!1i14!2i8413!3i5385!2i6!3x4095'
+                          '!2m3!1e0!2sm!3i407105169!3m7!2sen!5e1105!12m4'
+                          '!1e68!2m2!1sset!2sRoadmap!4e1!5m4!1e4!8m2!1e0!'
+                          '1e1!6m9!1e12!2i2!26m1!4b1!30m1!'
+                          '1f1.3953487873077393!39b1!44e1!50e0!23i4111425')}
         url = 'https://www.google.com/maps/preview/locationsharing/read'
         response = self._session.get(url, params=payload)
         try:
