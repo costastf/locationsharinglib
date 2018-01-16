@@ -52,3 +52,7 @@ class InvalidCredentials(Exception):
 
 class InvalidUser(Exception):
     """The email or phone is not recognised as belonging to a valid user"""
+
+
+class InvalidCookies(Exception):
+    """The cookies provided do not provide a valid session"""

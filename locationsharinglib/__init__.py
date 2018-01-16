@@ -32,7 +32,9 @@ Import all parts from locationsharinglib here
    http://google.github.io/styleguide/pyguide.html
 """
 from ._version import __version__
-from .locationsharinglibexceptions import InvalidData, InvalidCredentials
+from .locationsharinglibexceptions import (InvalidData,
+                                           InvalidCredentials,
+                                           InvalidCookies)
 from .locationsharinglib import Service, Person
 
 __author__ = '''Costas Tyfoxylos <costas.tyf@gmail.com>'''
@@ -54,3 +56,4 @@ assert Person
 # assert exceptions
 assert InvalidData
 assert InvalidCredentials
+assert InvalidCookies

@@ -31,17 +31,20 @@ Main code for locationsharinglib
 
 """
 
-import json
+import pickle
+import os
 import logging
 from datetime import datetime
 
+import json
 from bs4 import BeautifulSoup as Bfs
+from cachetools import TTLCache, cached
 from requests import Session
-from cachetools import cached, TTLCache
 
 from .locationsharinglibexceptions import (InvalidCredentials,
                                            InvalidData,
-                                           InvalidUser)
+                                           InvalidUser,
+                                           InvalidCookies)
 
 __author__ = '''Costas Tyfoxylos <costas.tyf@gmail.com>'''
 __docformat__ = '''google'''
@@ -164,12 +167,40 @@ class Person(object):  # pylint: disable=too-many-instance-attributes
 class Service(object):
     """An object modeling the service to retrieve locations"""
 
-    def __init__(self, email, password):
+    def __init__(self, email, password, cookies_file=None):
+        logger_name = u'{base}.{suffix}'.format(base=LOGGER_BASENAME,
+                                                suffix=self.__class__.__name__)
+        self._logger = logging.getLogger(logger_name)
         self._session = Session()
         self.email = email
         self.password = password
         self._login_url = 'https://accounts.google.com'
-        self._authenticate()
+        if cookies_file:
+            self._validate_cookie_session(cookies_file)
+        else:
+            self._authenticate()
+
+    def _validate_cookie_session(self, cookies_file):
+        with open(cookies_file, 'r') as cfile:
+            try:
+                self._session.cookies = pickle.load(cfile)
+            except KeyError:
+                raise InvalidCookies('The file provided cannot be unpickled')
+            except IOError:
+                message = 'The file {} does not exist.'.format(cookies_file)
+                raise InvalidCookies(message)
+        response = self._session.get(self._login_url)
+        if 'Sign in - Google Accounts' in response.text:
+            message = ('The cookies provided do not provide a valid session.'
+                       'Please authenticate normally and save a valid session '
+                       'again')
+            raise InvalidCookies(message)
+
+    def export_session(self, path):
+        cfile = os.path.join(path, 'cookies.pickle')
+        with open(cfile, 'w') as cookie_file:
+            pickle.dump(self._session.cookies, cookie_file)
+            return True
 
     def _authenticate(self):
         initial_form = self._initialize()
@@ -201,13 +232,10 @@ class Service(object):
         if INVALID_PASSWORD_TOKEN in response.text:
             raise InvalidCredentials
 
-    def _logout(self):
+    def logout(self):
         url = '{login_url}/Logout'.format(login_url=self._login_url)
         response = self._session.get(url)
         return response.ok
-
-    def __del__(self):
-        self._logout()
 
     @staticmethod
     def _get_hidden_form_fields(form):
@@ -233,6 +261,7 @@ class Service(object):
             output = json.loads(response.text.split("'")[1])
             people = [Person(info) for info in output[0]]
         except (IndexError, TypeError):
+            self._logger.exception('Caught exception')
             return ()
         return people
 
