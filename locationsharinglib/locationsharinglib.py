@@ -197,6 +197,15 @@ class Service(object):
             raise InvalidCookies(message)
 
     def export_session(self, path):
+        """Exports the session's cookies to the provided path
+
+        Args:
+            path: The path to save the cookies.pickle file
+
+        Returns:
+            True on success.
+
+        """
         cfile = os.path.join(path, 'cookies.pickle')
         with open(cfile, 'w') as cookie_file:
             pickle.dump(self._session.cookies, cookie_file)
@@ -233,6 +242,12 @@ class Service(object):
             raise InvalidCredentials
 
     def logout(self):
+        """Logs the session out, invalidating the cookies
+
+        Returns:
+            True on success, False otherwise
+
+        """
         url = '{login_url}/Logout'.format(login_url=self._login_url)
         response = self._session.get(url)
         return response.ok
