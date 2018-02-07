@@ -181,7 +181,7 @@ class Service(object):
             self._authenticate()
 
     def _validate_cookie_session(self, cookies_file):
-        with open(cookies_file, 'r') as cfile:
+        with open(cookies_file, 'rb') as cfile:
             try:
                 self._session.cookies = pickle.load(cfile)
             except KeyError:
@@ -207,7 +207,7 @@ class Service(object):
 
         """
         cfile = os.path.join(path, 'cookies.pickle')
-        with open(cfile, 'w') as cookie_file:
+        with open(cfile, 'wb') as cookie_file:
             pickle.dump(self._session.cookies, cookie_file)
             return True
 
