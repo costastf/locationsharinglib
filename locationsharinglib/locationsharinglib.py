@@ -81,6 +81,7 @@ class Person(object):  # pylint: disable=too-many-instance-attributes
         self._latitude = None
         self._longitude = None
         self._timestamp = None
+        self._accuracy = None
         self._address = None
         self._country_code = None
         self._populate(data)
@@ -94,6 +95,7 @@ class Person(object):  # pylint: disable=too-many-instance-attributes
             self._latitude = data[1][1][2]
             self._longitude = data[1][1][1]
             self._timestamp = data[1][2]
+            self._accuracy = data[1][3]
             self._address = data[1][4]
             self._country_code = data[1][6]
         except IndexError:
@@ -106,7 +108,8 @@ class Person(object):  # pylint: disable=too-many-instance-attributes
                 'Current location :{}'.format(self.address),
                 'Latitute         :{}'.format(self.latitude),
                 'Longitude        :{}'.format(self.longitude),
-                'Datetime         :{}'.format(self.datetime))
+                'Datetime         :{}'.format(self.datetime),
+                'Accuracy         :{}'.format(self._accuracy))
         return '\n'.join(text)
 
     @property
@@ -186,10 +189,10 @@ class Service(object):
             cfile = open(cookies_file, 'rb')
             self._session.cookies = pickle.load(cfile)
         except KeyError:
-            return False
-        except FileNotFoundError:
+            self._logger.error('Could not load pickle file, probably invalid pickle.')
             return False
         except IOError:
+            self._logger.error('Could not open pickle file, either file does not exist or no read access.')
             return False
 
         # Check if cookies are valid
