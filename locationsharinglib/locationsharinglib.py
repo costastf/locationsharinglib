@@ -31,12 +31,11 @@ Main code for locationsharinglib
 
 """
 
-import pickle
-import os
+import json
 import logging
+import pickle
 from datetime import datetime
 
-import json
 from bs4 import BeautifulSoup as Bfs
 from cachetools import TTLCache, cached
 from requests import Session
@@ -56,17 +55,14 @@ __maintainer__ = '''Costas Tyfoxylos'''
 __email__ = '''<costas.tyf@gmail.com>'''
 __status__ = '''Development'''  # "Prototype", "Development", "Production".
 
-
 # This is the main prefix used for logging
 LOGGER_BASENAME = '''locationsharinglib'''
 LOGGER = logging.getLogger(LOGGER_BASENAME)
 LOGGER.addHandler(logging.NullHandler())
 
-
 INVALID_EMAIL_MESSAGE = 'Sorry, Google doesn&#39;t recognize that email.'
 INVALID_PASSWORD_TOKEN = 'Wrong password. Try again.'  # noqa
 STATE_CACHING_SECONDS = 30
-
 
 STATE_CACHE = TTLCache(maxsize=1, ttl=STATE_CACHING_SECONDS)
 
@@ -175,20 +171,28 @@ class Service(object):
         self.email = email
         self.password = password
         self._login_url = 'https://accounts.google.com'
-        if cookies_file:
-            self._validate_cookie_session(cookies_file)
-        else:
-            self._authenticate()
 
-    def _validate_cookie_session(self, cookies_file):
-        with open(cookies_file, 'rb') as cfile:
-            try:
-                self._session.cookies = pickle.load(cfile)
-            except KeyError:
-                raise InvalidCookies('The file provided cannot be unpickled')
-            except IOError:
-                message = 'The file {} does not exist.'.format(cookies_file)
-                raise InvalidCookies(message)
+        # Try login with cookie
+        if cookies_file and self._validate_cookie(cookies_file):
+            return
+
+        # Try login based on username/password
+        self._authenticate()
+        if cookies_file:
+            self._export_cookie(cookies_file)
+
+    def _validate_cookie(self, cookies_file):
+        try:
+            cfile = open(cookies_file, 'rb')
+            self._session.cookies = pickle.load(cfile)
+        except KeyError:
+            return False
+        except FileNotFoundError:
+            return False
+        except IOError:
+            return False
+
+        # Check if cookies are valid
         response = self._session.get(self._login_url)
         if 'Sign in - Google Accounts' in response.text:
             message = ('The cookies provided do not provide a valid session.'
@@ -196,20 +200,15 @@ class Service(object):
                        'again')
             raise InvalidCookies(message)
 
-    def export_session(self, path):
-        """Exports the session's cookies to the provided path
+        return True
 
-        Args:
-            path: The path to save the cookies.pickle file
-
-        Returns:
-            True on success.
-
-        """
-        cfile = os.path.join(path, 'cookies.pickle')
-        with open(cfile, 'wb') as cookie_file:
-            pickle.dump(self._session.cookies, cookie_file)
-            return True
+    def _export_cookie(self, cookies_file):
+        try:
+            cfile = open(cookies_file, 'wb')
+            pickle.dump(self._session.cookies, cfile)
+        except IOError:
+            message = 'Could not export cookies to {}.'.format(cookies_file)
+            raise InvalidCookies(message)
 
     def _authenticate(self):
         initial_form = self._initialize()
