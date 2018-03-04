@@ -109,7 +109,7 @@ class Person(object):  # pylint: disable=too-many-instance-attributes
                 'Latitute         :{}'.format(self.latitude),
                 'Longitude        :{}'.format(self.longitude),
                 'Datetime         :{}'.format(self.datetime),
-                'Accuracy         :{}'.format(self._accuracy))
+                'Accuracy         :{}'.format(self.accuracy))
         return '\n'.join(text)
 
     @property
@@ -161,6 +161,11 @@ class Person(object):  # pylint: disable=too-many-instance-attributes
     def country_code(self):
         """The location's country code"""
         return self._country_code
+
+    @property
+    def accuracy(self):
+        """The accuracy of the gps"""
+        return self._accuracy
 
 
 class Service(object):
@@ -275,7 +280,7 @@ class Service(object):
         url = 'https://www.google.com/maps/preview/locationsharing/read'
         response = self._session.get(url, params=payload)
         try:
-            output = json.loads(response.text.split("'")[1])
+            output = json.loads(response.text.split("'", 1)[1])
             people = [Person(info) for info in output[0]]
         except (IndexError, TypeError):
             self._logger.exception('Caught exception')
