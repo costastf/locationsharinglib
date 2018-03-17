@@ -271,6 +271,7 @@ class Service(object):
                           '1f1.3953487873077393!39b1!44e1!50e0!23i4111425')}
         url = 'https://www.google.com/maps/preview/locationsharing/read'
         response = self._session.get(url, params=payload)
+        self._logger.debug(response.text)
         try:
             output = json.loads(response.text.split("'", 1)[1])
             people = [Person(info) for info in output[0]]
