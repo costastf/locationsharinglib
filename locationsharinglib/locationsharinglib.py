@@ -49,7 +49,7 @@ __author__ = '''Costas Tyfoxylos <costas.tyf@gmail.com>'''
 __docformat__ = '''google'''
 __date__ = '''2017-12-24'''
 __copyright__ = '''Copyright 2017, Costas Tyfoxylos'''
-__credits__ = ["Costas Tyfoxylos", "Michaël Arnauts"]
+__credits__ = ["Costas Tyfoxylos", "Michaël Arnauts", "Amy Nagle"]
 __license__ = '''MIT'''
 __maintainer__ = '''Costas Tyfoxylos'''
 __email__ = '''<costas.tyf@gmail.com>'''
@@ -272,26 +272,53 @@ class Service(object):
         url = 'https://www.google.com/maps/preview/locationsharing/read'
         response = self._session.get(url, params=payload)
         self._logger.debug(response.text)
+        return json.loads(response.text.split("'", 1)[1])
+
+    def get_shared_people(self):
+        """Retrieves all people that share their location with this account"""
         try:
-            output = json.loads(response.text.split("'", 1)[1])
+            output = self._get_data()
             people = [Person(info) for info in output[0]]
         except (IndexError, TypeError):
-            self._logger.exception('Response:%s', response.text)
-            return ()
+            self._logger.exception('Response: %s', output)
+            return []
         return people
 
+    def get_authenticated_person(self):
+        """Retrieves the person associated with this account"""
+        try:
+            output = self._get_data()
+            person = Person([
+                self.email,
+                output[9][1],
+                None,
+                None,
+                None,
+                None,
+                [
+                    None,
+                    None,
+                    self.email,
+                    self.email
+                ]
+            ])
+        except (IndexError, TypeError):
+            self._logger.exception('Response: %s', output)
+            return None
+        return person
+
     def get_all_people(self):
-        """Retrieves all people that share their location with this account"""
-        return self._get_data()
+        """Retrieves all people sharing their location"""
+        return filter(None, self.get_shared_people() + [self.get_authenticated_person()])
 
     def get_person_by_nickname(self, nickname):
         """Retrieves a person by nickname"""
-        return next((person for person in self._get_data()
+        return next((person for person in self.get_all_people()
                      if person.nickname.lower() == nickname.lower()), None)
 
     def get_person_by_full_name(self, name):
         """Retrieves a person by full name"""
-        return next((person for person in self._get_data()
+        return next((person for person in self.get_all_people()
                      if person.full_name.lower() == name.lower()), None)
 
     def get_coordinates_by_nickname(self, nickname):
