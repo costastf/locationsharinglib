@@ -276,7 +276,7 @@ class Service(object):
             output = json.loads(response.text.split("'", 1)[1])
             people = [Person(info) for info in output[0]]
         except (IndexError, TypeError):
-            self._logger.exception('Caught exception')
+            self._logger.exception('Response:%s', response.text)
             return ()
         return people
 
