@@ -4,10 +4,12 @@ History
 -------
 
 0.1 (2017-12-24)
----------------------
+----------------
 
 * First release
 
+
 1.1 (2018-03-18)
+----------------
 
 * Exposed the location of the actual account if shared (Contribution by: Amy Nagle <kabi-git@openmuffin.com>)
