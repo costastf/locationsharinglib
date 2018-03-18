@@ -186,10 +186,12 @@ class Service(object):
             cfile = open(cookies_file, 'rb')
             self._session.cookies = pickle.load(cfile)
         except KeyError:
-            self._logger.error('Could not load pickle file, probably invalid pickle.')
+            self._logger.error(('Could not load pickle file, '
+                                'probably invalid pickle.'))
             return False
         except IOError:
-            self._logger.error('Could not open pickle file, either file does not exist or no read access.')
+            self._logger.error(('Could not open pickle file, either file '
+                                'does not exist or no read access.'))
             return False
 
         # Check if cookies are valid
@@ -276,6 +278,7 @@ class Service(object):
 
     def get_shared_people(self):
         """Retrieves all people that share their location with this account"""
+        output = ''  # making pycharm introspection happy
         try:
             output = self._get_data()
             people = [Person(info) for info in output[0]]
@@ -286,6 +289,7 @@ class Service(object):
 
     def get_authenticated_person(self):
         """Retrieves the person associated with this account"""
+        output = ''  # making pycharm introspection happy
         try:
             output = self._get_data()
             person = Person([
@@ -309,7 +313,8 @@ class Service(object):
 
     def get_all_people(self):
         """Retrieves all people sharing their location"""
-        return filter(None, self.get_shared_people() + [self.get_authenticated_person()])
+        people = self.get_shared_people() + [self.get_authenticated_person()]
+        return filter(None, people)
 
     def get_person_by_nickname(self, nickname):
         """Retrieves a person by nickname"""
