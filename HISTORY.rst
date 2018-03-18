@@ -7,3 +7,7 @@ History
 ---------------------
 
 * First release
+
+1.1 (2018-03-18)
+
+* Exposed the location of the actual account if shared (Contribution by: Amy Nagle <kabi-git@openmuffin.com>)
