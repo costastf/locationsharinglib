@@ -56,3 +56,7 @@ class InvalidUser(Exception):
 
 class InvalidCookies(Exception):
     """The cookies provided do not provide a valid session"""
+
+
+class TooManyFailedAthenticationAttempts(Exception):
+    """The authentication attempt quota has been reached"""
