@@ -377,7 +377,7 @@ class Service(Authenticator):
                 ]
             ])
         except (IndexError, TypeError):
-            self._logger.exception('Response: %s', output)
+            self._logger.debug('Response: %s', output)
             return None
         return person
 
