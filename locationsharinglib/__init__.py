@@ -36,7 +36,7 @@ from .locationsharinglibexceptions import (InvalidData,
                                            InvalidCredentials,
                                            InvalidCookies,
                                            TooManyFailedAthenticationAttempts)
-from .locationsharinglib import Service, Person
+from .locationsharinglib import Service, Person, CookieGetter
 
 __author__ = '''Costas Tyfoxylos <costas.tyf@gmail.com>'''
 __docformat__ = '''google'''
