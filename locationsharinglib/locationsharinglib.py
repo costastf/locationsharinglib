@@ -170,7 +170,7 @@ class Person(object):  # pylint: disable=too-many-instance-attributes
         return self._accuracy
 
 
-class Authenticator(object):
+class Authenticator(object):  # pylint: disable=too-few-public-methods
     """Handles the authentication with google"""
 
     def __init__(self, email, password, cookies_file=None):
@@ -272,7 +272,8 @@ class Authenticator(object):
                 for field in form.find_all('input')}
 
 
-class CookieGetter(Authenticator):
+class CookieGetter(Authenticator):  # pylint: disable=too-few-public-methods
+    """Object to interactively get the cookies"""
 
     def __init__(self, email, password, cookies_file='authenticated.cookies'):
         super(CookieGetter, self).__init__(email,
@@ -298,7 +299,7 @@ class CookieGetter(Authenticator):
                      'authzen/awaittx?alt=json&key={}').format(data_key)
         await_body = {'txId': data_tx_id}
 
-        print("Open the Google App, and tap 'Yes' on the prompt to sign in ...")
+        print("Open the Google App, and tap 'Yes' on the prompt to sign in ...")  # pylint: disable=superfluous-parens
 
         self._session.headers['Referer'] = response.url
         response = self._session.post(await_url, json=await_body)
