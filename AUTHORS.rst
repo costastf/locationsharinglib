@@ -12,3 +12,4 @@ Contributors
 
 * Michaël Arnauts <michael.arnauts@gmail.com>
 * Amy Nagle <kabi-git@openmuffin.com>
+* Jeremy Wiebe <jrwiebe@uwaterloo.ca>
