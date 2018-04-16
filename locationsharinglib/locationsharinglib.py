@@ -44,7 +44,7 @@ from .locationsharinglibexceptions import (InvalidCredentials,
                                            InvalidData,
                                            InvalidUser,
                                            InvalidCookies,
-                                           TooManyFailedAthenticationAttempts)
+                                           TooManyFailedAuthenticationAttempts)
 
 __author__ = '''Costas Tyfoxylos <costas.tyf@gmail.com>'''
 __docformat__ = '''google'''
@@ -253,7 +253,38 @@ class Authenticator(object):  # pylint: disable=too-few-public-methods
         if INVALID_PASSWORD_TOKEN in response.text:
             raise InvalidCredentials
         elif TOO_MANY_ATTEMPTS in response.text:
-            raise TooManyFailedAthenticationAttempts
+            raise TooManyFailedAuthenticationAttempts
+        return response
+
+    def _skip_challenge(self, response):
+        soup = Bfs(response.text, 'html.parser')
+        all_forms = soup.findAll('form')
+        for form in all_forms:
+            if '/signin/challenge/skip' in form.get('action'):
+                form = form
+        payload = self._get_hidden_form_fields(form)
+        url = '{login_url}{form_action}'.format(
+                login_url=self._login_url,
+                form_action=form.get('action')
+            )
+        response = self._session.post(url, data=payload)
+        return response
+
+    def _find_az(self, response):
+        soup = Bfs(response.text, 'html.parser')
+        all_forms = soup.findAll('form')
+        for form in all_forms:
+            if 'Tap Yes' in form.text:
+                if 'Too many' in form.text:
+                    raise TooManyFailedAuthenticationAttempts
+                else:
+                    az_form = form
+        url = '{login_url}{az_url}'.format(
+                login_url=self._login_url,
+                az_url=az_form.get('action')
+            )
+        payload = self._get_hidden_form_fields(az_form)
+        response = self._session.post(url, data=payload)
         return response
 
     def logout(self):
@@ -287,6 +318,10 @@ class CookieGetter(Authenticator):  # pylint: disable=too-few-public-methods
         response = self._submit_password(password_form)
         if 'challenge/az' in response.url:
             self._handle_prompt(response)
+        elif 'challenge/' in response.url:
+            selection_form = self._skip_challenge(response)
+            az_form = self._find_az(selection_form)
+            self._handle_prompt(az_form)
 
     def _handle_prompt(self, response):
         # Borrowed with slight modification from https://git.io/vxu1A
@@ -334,7 +369,7 @@ class Service(Authenticator):
     def _get_data(self):
         payload = {'authuser': 0,
                    'hl': 'en',
-                   'gl': 'en',
+                   'gl': 'us',
                    # pd holds the information about the rendering of the map and
                    # it is irrelevant with the location sharing capabilities.
                    # the below info points to google's headquarters.

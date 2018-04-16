@@ -35,7 +35,7 @@ from ._version import __version__
 from .locationsharinglibexceptions import (InvalidData,
                                            InvalidCredentials,
                                            InvalidCookies,
-                                           TooManyFailedAthenticationAttempts)
+                                           TooManyFailedAuthenticationAttempts)
 from .locationsharinglib import Service, Person, CookieGetter
 
 __author__ = '''Costas Tyfoxylos <costas.tyf@gmail.com>'''
@@ -59,4 +59,4 @@ assert CookieGetter
 assert InvalidData
 assert InvalidCredentials
 assert InvalidCookies
-assert TooManyFailedAthenticationAttempts
+assert TooManyFailedAuthenticationAttempts
