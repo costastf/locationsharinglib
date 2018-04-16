@@ -51,7 +51,7 @@ __docformat__ = '''google'''
 __date__ = '''2017-12-24'''
 __copyright__ = '''Copyright 2017, Costas Tyfoxylos'''
 __credits__ = ["Costas Tyfoxylos", "Michaël Arnauts", "Amy Nagle", 
-               "Jeremy Wiebe"]
+               "Jeremy Wiebe", "Chris Helming"]
 __license__ = '''MIT'''
 __maintainer__ = '''Costas Tyfoxylos'''
 __email__ = '''<costas.tyf@gmail.com>'''
