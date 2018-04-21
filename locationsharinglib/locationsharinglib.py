@@ -31,6 +31,7 @@ Main code for locationsharinglib
 
 """
 
+from __future__ import unicode_literals
 import json
 import logging
 import pickle
@@ -43,13 +44,15 @@ from requests import Session
 from .locationsharinglibexceptions import (InvalidCredentials,
                                            InvalidData,
                                            InvalidUser,
-                                           InvalidCookies)
+                                           InvalidCookies,
+                                           TooManyFailedAthenticationAttempts)
 
 __author__ = '''Costas Tyfoxylos <costas.tyf@gmail.com>'''
 __docformat__ = '''google'''
 __date__ = '''2017-12-24'''
 __copyright__ = '''Copyright 2017, Costas Tyfoxylos'''
-__credits__ = ["Costas Tyfoxylos", "Michaël Arnauts", "Amy Nagle"]
+__credits__ = ["Costas Tyfoxylos", "Michaël Arnauts", "Amy Nagle",
+               "Jeremy Wiebe"]
 __license__ = '''MIT'''
 __maintainer__ = '''Costas Tyfoxylos'''
 __email__ = '''<costas.tyf@gmail.com>'''
@@ -62,6 +65,7 @@ LOGGER.addHandler(logging.NullHandler())
 
 INVALID_EMAIL_MESSAGE = 'Sorry, Google doesn&#39;t recognize that email.'
 INVALID_PASSWORD_TOKEN = 'Wrong password. Try again.'  # noqa
+TOO_MANY_ATTEMPTS = 'Unavailable because of too many failed attempts'
 STATE_CACHING_SECONDS = 30
 
 STATE_CACHE = TTLCache(maxsize=1, ttl=STATE_CACHING_SECONDS)
@@ -168,8 +172,8 @@ class Person(object):  # pylint: disable=too-many-instance-attributes
         return self._accuracy
 
 
-class Service(object):
-    """An object modeling the service to retrieve locations"""
+class Authenticator(object):  # pylint: disable=too-few-public-methods
+    """Handles the authentication with google"""
 
     def __init__(self, email, password, cookies_file=None):
         logger_name = u'{base}.{suffix}'.format(base=LOGGER_BASENAME,
@@ -249,6 +253,9 @@ class Service(object):
         response = self._session.post(url, data=payload)
         if INVALID_PASSWORD_TOKEN in response.text:
             raise InvalidCredentials
+        elif TOO_MANY_ATTEMPTS in response.text:
+            raise TooManyFailedAthenticationAttempts
+        return response
 
     def logout(self):
         """Logs the session out, invalidating the cookies
@@ -265,6 +272,64 @@ class Service(object):
     def _get_hidden_form_fields(form):
         return {field.get('name'): field.get('value')
                 for field in form.find_all('input')}
+
+
+class CookieGetter(Authenticator):  # pylint: disable=too-few-public-methods
+    """Object to interactively get the cookies"""
+
+    def __init__(self, email, password, cookies_file='authenticated.cookies'):
+        super(CookieGetter, self).__init__(email,
+                                           password,
+                                           cookies_file=cookies_file)
+
+    def _authenticate(self):
+        initial_form = self._initialize()
+        password_form = self._submit_email(initial_form)
+        response = self._submit_password(password_form)
+        if 'challenge/az' in response.url:
+            self._handle_prompt(response)
+
+    def _handle_prompt(self, response):
+        # Borrowed with slight modification from https://git.io/vxu1A
+        soup = Bfs(response.text, 'html.parser')
+        challenge_url = response.url.split("?")[0]
+
+        data_key = soup.find('div', {'data-api-key': True}).get('data-api-key')
+        data_tx_id = soup.find('div', {'data-tx-id': True}).get('data-tx-id')
+
+        await_url = ('https://content.googleapis.com/cryptauth/v1/'
+                     'authzen/awaittx?alt=json&key={}').format(data_key)
+        await_body = {'txId': data_tx_id}
+
+        print("Open the Google App, and tap 'Yes' on the prompt to sign in ...")  # pylint: disable=superfluous-parens
+
+        self._session.headers['Referer'] = response.url
+        response = self._session.post(await_url, json=await_body)
+        parsed = json.loads(response.text)
+
+        payload = {
+            'challengeId': soup.find('input',
+                                     {'name': 'challengeId'}).get('value'),
+            'challengeType': soup.find('input',
+                                       {'name': 'challengeType'}).get('value'),
+            'TL': soup.find('input', {'name': 'TL'}).get('value'),
+            'gxf': soup.find('input', {'name': 'gxf'}).get('value'),
+            'token': parsed['txToken'],
+            'action': soup.find('input', {'name': 'action'}).get('value'),
+            'TrustDevice': 'on',
+        }
+        response = self._session.post(challenge_url, data=payload)
+        response.raise_for_status()
+        return response
+
+
+class Service(Authenticator):
+    """An object modeling the service to retrieve locations"""
+
+    def __init__(self, email, password, cookies_file=None):
+        super(Service, self).__init__(email,
+                                      password,
+                                      cookies_file=cookies_file)
 
     @cached(STATE_CACHE)
     def _get_data(self):
