@@ -50,7 +50,7 @@ __author__ = '''Costas Tyfoxylos <costas.tyf@gmail.com>'''
 __docformat__ = '''google'''
 __date__ = '''2017-12-24'''
 __copyright__ = '''Copyright 2017, Costas Tyfoxylos'''
-__credits__ = ["Costas Tyfoxylos", "Michaël Arnauts", "Amy Nagle", 
+__credits__ = ["Costas Tyfoxylos", "Michaël Arnauts", "Amy Nagle",
                "Jeremy Wiebe", "Chris Helming"]
 __license__ = '''MIT'''
 __maintainer__ = '''Costas Tyfoxylos'''
@@ -381,7 +381,11 @@ class Service(Authenticator):
         url = 'https://www.google.com/maps/preview/locationsharing/read'
         response = self._session.get(url, params=payload)
         self._logger.debug(response.text)
-        return json.loads(response.text.split("'", 1)[1])
+        try:
+            data = json.loads(response.text.split("'", 1)[1])
+        except (ValueError, IndexError, TypeError):
+            self._logger.debug('Unable to parse response :%s', response.text)
+        return data
 
     def get_shared_people(self):
         """Retrieves all people that share their location with this account"""
@@ -390,7 +394,7 @@ class Service(Authenticator):
             output = self._get_data()
             people = [Person(info) for info in output[0]]
         except (IndexError, TypeError):
-            self._logger.exception('Response: %s', output)
+            self._logger.debug('Could not load people, response: %s', output)
             return []
         return people
 
