@@ -45,7 +45,7 @@ from .locationsharinglibexceptions import (InvalidCredentials,
                                            InvalidData,
                                            InvalidUser,
                                            InvalidCookies,
-                                           TooManyFailedAthenticationAttempts)
+                                           TooManyFailedAuthenticationAttempts)
 
 __author__ = '''Costas Tyfoxylos <costas.tyf@gmail.com>'''
 __docformat__ = '''google'''
@@ -102,7 +102,7 @@ class Person(object):  # pylint: disable=too-many-instance-attributes
             self._accuracy = data[1][3]
             self._address = data[1][4]
             self._country_code = data[1][6]
-        except IndexError:
+        except (IndexError, TypeError):
             self._logger.debug(data)
             raise InvalidData
 
@@ -254,7 +254,7 @@ class Authenticator(object):  # pylint: disable=too-few-public-methods
         if INVALID_PASSWORD_TOKEN in response.text:
             raise InvalidCredentials
         elif TOO_MANY_ATTEMPTS in response.text:
-            raise TooManyFailedAthenticationAttempts
+            raise TooManyFailedAuthenticationAttempts
         return response
 
     def logout(self):
@@ -347,7 +347,11 @@ class Service(Authenticator):
         url = 'https://www.google.com/maps/preview/locationsharing/read'
         response = self._session.get(url, params=payload)
         self._logger.debug(response.text)
-        return json.loads(response.text.split("'", 1)[1])
+        try:
+            data = json.loads(response.text.split("'", 1)[1])
+        except (ValueError, IndexError, TypeError):
+            self._logger.debug('Unable to parse response :%s', response.text)
+        return data
 
     def get_shared_people(self):
         """Retrieves all people that share their location with this account"""
@@ -356,7 +360,7 @@ class Service(Authenticator):
             output = self._get_data()
             people = [Person(info) for info in output[0]]
         except (IndexError, TypeError):
-            self._logger.exception('Response: %s', output)
+            self._logger.debug('Could not load people, response: %s', output)
             return []
         return people
 
