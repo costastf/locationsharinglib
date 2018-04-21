@@ -35,7 +35,7 @@ __author__ = '''Costas Tyfoxylos <costas.tyf@gmail.com>'''
 __docformat__ = '''google'''
 __date__ = '''2017-12-24'''
 __copyright__ = '''Copyright 2017, Costas Tyfoxylos'''
-__credits__ = ["Costas Tyfoxylos"]
+__credits__ = ["Costas Tyfoxylos", "Chris Helming"]
 __license__ = '''MIT'''
 __maintainer__ = '''Costas Tyfoxylos'''
 __email__ = '''<costas.tyf@gmail.com>'''
@@ -58,5 +58,5 @@ class InvalidCookies(Exception):
     """The cookies provided do not provide a valid session"""
 
 
-class TooManyFailedAthenticationAttempts(Exception):
+class TooManyFailedAuthenticationAttempts(Exception):
     """The authentication attempt quota has been reached"""
