@@ -60,3 +60,7 @@ class InvalidCookies(Exception):
 
 class TooManyFailedAuthenticationAttempts(Exception):
     """The authentication attempt quota has been reached"""
+
+
+class NoExpectedFormOption(Exception):
+    """There was no form presented with the expected option"""

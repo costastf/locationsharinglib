@@ -44,7 +44,8 @@ from .locationsharinglibexceptions import (InvalidCredentials,
                                            InvalidData,
                                            InvalidUser,
                                            InvalidCookies,
-                                           TooManyFailedAuthenticationAttempts)
+                                           TooManyFailedAuthenticationAttempts,
+                                           NoExpectedFormOption)
 
 __author__ = '''Costas Tyfoxylos <costas.tyf@gmail.com>'''
 __docformat__ = '''google'''
@@ -256,36 +257,31 @@ class Authenticator(object):  # pylint: disable=too-few-public-methods
             raise TooManyFailedAuthenticationAttempts
         return response
 
-    def _skip_challenge(self, response):
+    def _get_required_form(self, response, action):
         soup = Bfs(response.text, 'html.parser')
-        all_forms = soup.findAll('form')
-        for form in all_forms:
-            if '/signin/challenge/skip' in form.get('action'):
-                form = form
+        form = next([form for form in soup.findAll('form')
+                     if action in form.get('action')], None)
+        if not form:
+            self._logger.debug('Response : {}'.format(response.text))
+            raise NoExpectedFormOption
+        return form
+
+    def _submit_form(self, form):
+        url = '{login_url}{action}'.format(login_url=self._login_url,
+                                           action=form.get('action'))
         payload = self._get_hidden_form_fields(form)
-        url = '{login_url}{form_action}'.format(
-                login_url=self._login_url,
-                form_action=form.get('action')
-            )
         response = self._session.post(url, data=payload)
         return response
 
+    def _skip_challenge(self, response):
+        form = self._get_required_form(response, '/signin/challenge/skip')
+        return self._submit_form(form)
+
     def _find_az(self, response):
-        soup = Bfs(response.text, 'html.parser')
-        all_forms = soup.findAll('form')
-        for form in all_forms:
-            if 'Tap Yes' in form.text:
-                if 'Too many' in form.text:
-                    raise TooManyFailedAuthenticationAttempts
-                else:
-                    az_form = form
-        url = '{login_url}{az_url}'.format(
-                login_url=self._login_url,
-                az_url=az_form.get('action')
-            )
-        payload = self._get_hidden_form_fields(az_form)
-        response = self._session.post(url, data=payload)
-        return response
+        form = self._get_required_form(response, 'Tap Yes')
+        if 'Too many' in form.text:
+            raise TooManyFailedAuthenticationAttempts
+        return self._submit_form(form)
 
     def logout(self):
         """Logs the session out, invalidating the cookies

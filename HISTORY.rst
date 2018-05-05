@@ -19,3 +19,9 @@ History
 ----------------
 
 * Re-exposed the accuracy of the GPS.
+
+
+1.3 (2018-05--5)
+----------------
+
+Implemented 2FA method and added cli tool "get-maps-cookies" to help with retrieval of cookies. (With contribution by Chris Helming)
