@@ -31,6 +31,7 @@ Main code for locationsharinglib
 
 """
 
+from __future__ import unicode_literals
 import json
 import logging
 import pickle
@@ -107,13 +108,13 @@ class Person(object):  # pylint: disable=too-many-instance-attributes
             raise InvalidData
 
     def __str__(self):
-        text = ('Full name        :{}'.format(self.full_name),
-                'Nickname         :{}'.format(self.nickname),
-                'Current location :{}'.format(self.address),
-                'Latitute         :{}'.format(self.latitude),
-                'Longitude        :{}'.format(self.longitude),
-                'Datetime         :{}'.format(self.datetime),
-                'Accuracy         :{}'.format(self._accuracy))
+        text = (u'Full name        :{}'.format(self.full_name),
+                u'Nickname         :{}'.format(self.nickname),
+                u'Current location :{}'.format(self.address),
+                u'Latitute         :{}'.format(self.latitude),
+                u'Longitude        :{}'.format(self.longitude),
+                u'Datetime         :{}'.format(self.datetime),
+                u'Accuracy         :{}'.format(self._accuracy))
         return '\n'.join(text)
 
     @property
