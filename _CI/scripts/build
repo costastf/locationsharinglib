@@ -1,6 +1,6 @@
 #!/bin/bash --login
 # we want all these files to exist in the actual package
-required_files=(".VERSION" "LICENSE" "AUTHORS.rst" "CONTRIBUTING.rst" "HISTORY.rst" "README.rst" "USAGE.rst" "Pipfile" "Pipfile.lock" "requirements.txt" "dev-requirements.txt")
+required_files=("cli.py" ".VERSION" "LICENSE" "AUTHORS.rst" "CONTRIBUTING.rst" "HISTORY.rst" "README.rst" "USAGE.rst" "Pipfile" "Pipfile.lock" "requirements.txt" "dev-requirements.txt")
 
 cd $(dirname $0)/../..
 

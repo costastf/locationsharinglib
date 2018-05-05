@@ -45,14 +45,15 @@ from .locationsharinglibexceptions import (InvalidCredentials,
                                            InvalidData,
                                            InvalidUser,
                                            InvalidCookies,
-                                           TooManyFailedAuthenticationAttempts)
+                                           TooManyFailedAuthenticationAttempts,
+                                           NoExpectedFormOption)
 
 __author__ = '''Costas Tyfoxylos <costas.tyf@gmail.com>'''
 __docformat__ = '''google'''
 __date__ = '''2017-12-24'''
 __copyright__ = '''Copyright 2017, Costas Tyfoxylos'''
 __credits__ = ["Costas Tyfoxylos", "Michaël Arnauts", "Amy Nagle",
-               "Jeremy Wiebe"]
+               "Jeremy Wiebe", "Chris Helming"]
 __license__ = '''MIT'''
 __maintainer__ = '''Costas Tyfoxylos'''
 __email__ = '''<costas.tyf@gmail.com>'''
@@ -102,18 +103,18 @@ class Person(object):  # pylint: disable=too-many-instance-attributes
             self._accuracy = data[1][3]
             self._address = data[1][4]
             self._country_code = data[1][6]
-        except (IndexError, TypeError):
+        except IndexError:
             self._logger.debug(data)
             raise InvalidData
 
     def __str__(self):
-        text = ('Full name        :{}'.format(self.full_name),
-                'Nickname         :{}'.format(self.nickname),
-                'Current location :{}'.format(self.address),
-                'Latitute         :{}'.format(self.latitude),
-                'Longitude        :{}'.format(self.longitude),
-                'Datetime         :{}'.format(self.datetime),
-                'Accuracy         :{}'.format(self._accuracy))
+        text = (u'Full name        :{}'.format(self.full_name),
+                u'Nickname         :{}'.format(self.nickname),
+                u'Current location :{}'.format(self.address),
+                u'Latitute         :{}'.format(self.latitude),
+                u'Longitude        :{}'.format(self.longitude),
+                u'Datetime         :{}'.format(self.datetime),
+                u'Accuracy         :{}'.format(self._accuracy))
         return '\n'.join(text)
 
     @property
@@ -257,6 +258,32 @@ class Authenticator(object):  # pylint: disable=too-few-public-methods
             raise TooManyFailedAuthenticationAttempts
         return response
 
+    def _get_required_form(self, response, action):
+        soup = Bfs(response.text, 'html.parser')
+        form = next([form for form in soup.findAll('form')
+                     if action in form.get('action')], None)
+        if not form:
+            self._logger.debug('Response : {}'.format(response.text))
+            raise NoExpectedFormOption
+        return form
+
+    def _submit_form(self, form):
+        url = '{login_url}{action}'.format(login_url=self._login_url,
+                                           action=form.get('action'))
+        payload = self._get_hidden_form_fields(form)
+        response = self._session.post(url, data=payload)
+        return response
+
+    def _skip_challenge(self, response):
+        form = self._get_required_form(response, '/signin/challenge/skip')
+        return self._submit_form(form)
+
+    def _find_az(self, response):
+        form = self._get_required_form(response, 'Tap Yes')
+        if 'Too many' in form.text:
+            raise TooManyFailedAuthenticationAttempts
+        return self._submit_form(form)
+
     def logout(self):
         """Logs the session out, invalidating the cookies
 
@@ -288,6 +315,10 @@ class CookieGetter(Authenticator):  # pylint: disable=too-few-public-methods
         response = self._submit_password(password_form)
         if 'challenge/az' in response.url:
             self._handle_prompt(response)
+        elif 'challenge/' in response.url:
+            selection_form = self._skip_challenge(response)
+            az_form = self._find_az(selection_form)
+            self._handle_prompt(az_form)
 
     def _handle_prompt(self, response):
         # Borrowed with slight modification from https://git.io/vxu1A
@@ -335,7 +366,7 @@ class Service(Authenticator):
     def _get_data(self):
         payload = {'authuser': 0,
                    'hl': 'en',
-                   'gl': 'en',
+                   'gl': 'us',
                    # pd holds the information about the rendering of the map and
                    # it is irrelevant with the location sharing capabilities.
                    # the below info points to google's headquarters.

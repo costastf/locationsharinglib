@@ -41,6 +41,10 @@ setup(
     license='MIT',
     zip_safe=False,
     keywords='''locationsharinglib google maps location sharing''',
+    entry_points={
+        'console_scripts': [
+            'get-maps-cookies = cli:main'
+        ]},
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',

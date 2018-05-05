@@ -35,7 +35,7 @@ __author__ = '''Costas Tyfoxylos <costas.tyf@gmail.com>'''
 __docformat__ = '''google'''
 __date__ = '''2017-12-24'''
 __copyright__ = '''Copyright 2017, Costas Tyfoxylos'''
-__credits__ = ["Costas Tyfoxylos"]
+__credits__ = ["Costas Tyfoxylos", "Chris Helming"]
 __license__ = '''MIT'''
 __maintainer__ = '''Costas Tyfoxylos'''
 __email__ = '''<costas.tyf@gmail.com>'''
@@ -59,4 +59,8 @@ class InvalidCookies(Exception):
 
 
 class TooManyFailedAuthenticationAttempts(Exception):
-    """Too many failed authentication attempts"""
+    """The authentication attempt quota has been reached"""
+
+
+class NoExpectedFormOption(Exception):
+    """There was no form presented with the expected option"""

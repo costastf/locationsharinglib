@@ -9,6 +9,7 @@ include Pipfile
 include Pipfile.lock
 include requirements.txt
 include dev-requirements.txt
+include cli.py
 include locationsharinglib/.VERSION
 
 recursive-exclude * __pycache__

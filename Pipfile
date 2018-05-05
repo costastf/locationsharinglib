@@ -5,21 +5,21 @@ name = "pypi"
 
 [dev-packages]
 
-pipenv = "*"
-sphinx = "*"
+pipenv = "==11.9.0"
+sphinx = "==1.7.2"
 sphinx_rtd_theme = "*"
-coverage = "*"
-nose = "*"
-"nose-htmloutput" = "*"
-prospector = "*"
-tox = "*"
-"logilab-common" = "*"
-betamax = "*"
-hypothesis = "*"
+coverage = "==4.5.1"
+nose = "==1.3.7"
+"nose-htmloutput" = "==0.6.0"
+prospector = "==0.12.7"
+tox = "==2.9.1"
+"logilab-common" = "==1.4.1"
+betamax = "==0.8.1"
+hypothesis = "==3.53.0"
 
 
 [packages]
 
-requests = "*"
-beautifulsoup4 = "*"
-cachetools = "*"
+requests = "==2.18.4"
+beautifulsoup4 = "==4.6.0"
+cachetools = "==2.0.1"
