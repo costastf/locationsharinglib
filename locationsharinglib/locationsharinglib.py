@@ -381,7 +381,9 @@ class Service(Authenticator):
         try:
             data = json.loads(response.text.split("'", 1)[1])
         except (ValueError, IndexError, TypeError):
-            self._logger.debug('Unable to parse response :%s', response.text)
+            self._logger.exception('Unable to parse response :%s',
+                                   response.text)
+            data = ['']
         return data
 
     def get_shared_people(self):
