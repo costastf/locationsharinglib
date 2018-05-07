@@ -119,7 +119,7 @@
                 "sha256:f0b0e4eba956de51238e17573b7087e852dfe9854afd2e9c873f73fc0ca0a6dd",
                 "sha256:9d98697f088eb1b0fa451391f91afb5e3ebde16bbdb272819fd091151fda4f1a"
             ],
-            "markers": "python_version < '3.4'",
+            "markers": "python_version == '2.7'",
             "version": "==1.5"
         },
         "betamax": {
@@ -180,6 +180,7 @@
             "hashes": [
                 "sha256:5308b47021bc2340965c371f0f058cc6971a04502638d4244225c49d80db273a"
             ],
+            "markers": "python_version == '2.7'",
             "version": "==3.5.0"
         },
         "coverage": {
@@ -422,10 +423,10 @@
         },
         "pep8-naming": {
             "hashes": [
-                "sha256:a6286daab548c704e90a3db27b6b6fdf9e26c80b82518133d2bb0760291eaee3",
-                "sha256:57da65bb7b2b9795aa42d759ecd5718354348ae43da980fe589567f8e948be31"
+                "sha256:434c7947da02f789312d3aa4a3f305953575b501a6acebbc643563e33150ebea",
+                "sha256:efe8333af257499fb121194f0f65c8a56ac68b9a003467906fa581ec35299842"
             ],
-            "version": "==0.6.0"
+            "version": "==0.6.1"
         },
         "pipenv": {
             "hashes": [

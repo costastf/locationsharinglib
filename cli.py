@@ -33,7 +33,7 @@ Main code for locationsharinglib
 
 import argparse
 
-from locationsharinglib.locationsharinglib import CookieGetter
+from locationsharinglib import CookieGetter
 
 __author__ = '''Costas Tyfoxylos <costas.tyf@gmail.com>'''
 __docformat__ = '''google'''

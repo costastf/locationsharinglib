@@ -43,7 +43,7 @@ setup(
     keywords='''locationsharinglib google maps location sharing''',
     entry_points={
         'console_scripts': [
-            'get-maps-cookies = cli:main'
+            'get-maps-cookies = locationsharinglib.cli:main'
         ]},
     classifiers=[
         'Development Status :: 4 - Beta',
