@@ -120,7 +120,7 @@ class Person(object):  # pylint: disable=too-many-instance-attributes
     @property
     def id(self):  # pylint: disable=invalid-name
         """The internal google id of the account"""
-        return self._id
+        return self._id or self.full_name
 
     @property
     def picture_url(self):
