@@ -181,6 +181,10 @@ class Authenticator(object):  # pylint: disable=too-few-public-methods
                                                 suffix=self.__class__.__name__)
         self._logger = logging.getLogger(logger_name)
         self._session = Session()
+        agent = ('Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:59.0) '
+                 'Gecko/20100101 Firefox/59.0')
+        self._session.headers.update({'User-Agent': agent,
+                                      'Referer': 'https://www.google.com'})
         self.email = email
         self.password = password
         self._login_url = 'https://accounts.google.com'
