@@ -92,20 +92,17 @@ class Person(object):  # pylint: disable=too-many-instance-attributes
         self._populate(data)
 
     def _populate(self, data):
-        try:
-            self._id = data[6][0]
-            self._picture_url = data[6][1]
-            self._full_name = data[6][2]
-            self._nickname = data[6][3]
-            self._latitude = data[1][1][2]
-            self._longitude = data[1][1][1]
-            self._timestamp = data[1][2]
-            self._accuracy = data[1][3]
-            self._address = data[1][4]
-            self._country_code = data[1][6]
-        except IndexError:
-            self._logger.debug(data)
-            raise InvalidData
+        self._id = data[6][0]
+        self._picture_url = data[6][1]
+        self._full_name = data[6][2]
+        self._nickname = data[6][3]
+        # NOTE: location (data[1]) is not always here (can be None) -> TypeError
+        self._latitude = data[1][1][2]
+        self._longitude = data[1][1][1]
+        self._timestamp = data[1][2]
+        self._accuracy = data[1][3]
+        self._address = data[1][4]
+        self._country_code = data[1][6]
 
     def __str__(self):
         text = (u'Full name        :{}'.format(self.full_name),
@@ -393,12 +390,13 @@ class Service(Authenticator):
     def get_shared_people(self):
         """Retrieves all people that share their location with this account"""
         output = ''  # making pycharm introspection happy
-        try:
-            output = self._get_data()
-            people = [Person(info) for info in output[0]]
-        except (IndexError, TypeError):
-            self._logger.debug('Could not load people, response: %s', output)
-            return []
+        people = []
+        output = self._get_data()
+        for info in output[0]:
+            try:
+                people.append( Person(info))
+            except (IndexError, TypeError):
+                self._logger.debug('Missing location or another info, do not use this person, info: %s', info)
         return people
 
     def get_authenticated_person(self):
@@ -421,7 +419,7 @@ class Service(Authenticator):
                 ]
             ])
         except (IndexError, TypeError):
-            self._logger.debug('Response: %s', output)
+            self._logger.debug('Wrong authenticated person, output: %s', output)
             return None
         return person
 
