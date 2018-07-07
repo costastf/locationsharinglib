@@ -34,6 +34,7 @@ Main code for locationsharinglib
 import argparse
 
 from locationsharinglib import CookieGetter
+from locationsharinglib import Unexpected2FAResponse
 
 __author__ = '''Costas Tyfoxylos <costas.tyf@gmail.com>'''
 __docformat__ = '''google'''
@@ -78,7 +79,10 @@ def get_arguments():
 def main():
     """Interactively handles the authentication"""
     args = get_arguments()
-    CookieGetter(args.email, args.password, args.cookies_file)
+    try:
+        CookieGetter(args.email, args.password, args.cookies_file)
+    except Unexpected2FAResponse as exc:
+        raise SystemExit(exc)
 
 
 if __name__ == '__main__':

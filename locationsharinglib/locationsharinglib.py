@@ -46,7 +46,8 @@ from .locationsharinglibexceptions import (InvalidCredentials,
                                            InvalidUser,
                                            InvalidCookies,
                                            TooManyFailedAuthenticationAttempts,
-                                           NoExpectedFormOption)
+                                           NoExpectedFormOption,
+                                           Unexpected2FAResponse)
 
 __author__ = '''Costas Tyfoxylos <costas.tyf@gmail.com>'''
 __docformat__ = '''google'''
@@ -333,13 +334,7 @@ class CookieGetter(Authenticator):  # pylint: disable=too-few-public-methods
             data_tx_id = soup.find('div', {'data-tx-id': True}).get('data-tx-id')
         except AttributeError:
             message = 'Unexpected response received :{}'.format(response.text)
-            self._logger.exception(message)
-            message = ('Unable to continue, '
-                       'please create an issue on the issue tracker '
-                       'https://github.com/costastf/locationsharinglib/issues/'
-                       ' mentioning the above exception and being very '
-                       'careful with any personal data mentioned within.')
-            raise SystemExit(message)
+            raise Unexpected2FAResponse(message)
         await_url = ('https://content.googleapis.com/cryptauth/v1/'
                      'authzen/awaittx?alt=json&key={}').format(data_key)
         await_body = {'txId': data_tx_id}

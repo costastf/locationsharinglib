@@ -64,3 +64,7 @@ class TooManyFailedAuthenticationAttempts(Exception):
 
 class NoExpectedFormOption(Exception):
     """There was no form presented with the expected option"""
+
+
+class Unexpected2FAResponse(Exception):
+    """The response received was not expected"""
