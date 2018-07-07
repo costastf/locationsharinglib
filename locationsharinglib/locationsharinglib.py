@@ -264,8 +264,8 @@ class Authenticator(object):  # pylint: disable=too-few-public-methods
 
     def _get_required_form(self, response, action):
         soup = Bfs(response.text, 'html.parser')
-        form = next([form for form in soup.findAll('form')
-                     if form.get('action', '') == action], None)
+        form = next((form for form in soup.findAll('form')
+                     if form.get('action', '') == action), None)
         if not form:
             self._logger.debug('Response : {}'.format(response.text))
             raise NoExpectedFormOption
