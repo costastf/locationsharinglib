@@ -90,6 +90,8 @@ class Person(object):  # pylint: disable=too-many-instance-attributes
         self._accuracy = None
         self._address = None
         self._country_code = None
+        self._charging = None
+        self._battery_level = None
         self._populate(data)
 
     def _populate(self, data):
@@ -104,6 +106,8 @@ class Person(object):  # pylint: disable=too-many-instance-attributes
             self._accuracy = data[1][3]
             self._address = data[1][4]
             self._country_code = data[1][6]
+            self._charging = data[13][0]
+            self._battery_level = data[13][1]
         except IndexError:
             self._logger.debug(data)
             raise InvalidData
@@ -172,6 +176,16 @@ class Person(object):  # pylint: disable=too-many-instance-attributes
     def accuracy(self):
         """The accuracy of the gps"""
         return self._accuracy
+
+    @property
+    def charging(self):
+        """Whether or not the user's device is charging"""
+        return bool(self._charging)
+
+    @property
+    def battery_level(self):
+        """The battery level of the user's device"""
+        return self._battery_level
 
 
 class Authenticator(object):  # pylint: disable=too-few-public-methods
@@ -421,7 +435,14 @@ class Service(Authenticator):
                     None,
                     self.email,
                     self.email
-                ]
+                ],
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
             ])
         except (IndexError, TypeError):
             self._logger.debug('Response: %s', output)
