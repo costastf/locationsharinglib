@@ -90,8 +90,9 @@ class Person(object):  # pylint: disable=too-many-instance-attributes
         self._accuracy = None
         self._address = None
         self._country_code = None
+        self._battery = None
         self._populate(data)
-
+        
     def _populate(self, data):
         try:
             self._id = data[6][0]
@@ -104,6 +105,9 @@ class Person(object):  # pylint: disable=too-many-instance-attributes
             self._accuracy = data[1][3]
             self._address = data[1][4]
             self._country_code = data[1][6]
+            if (len(data)>13):
+                if (len(data[13])>1):
+                    self._battery = data[13][1]
         except IndexError:
             self._logger.debug(data)
             raise InvalidData
@@ -172,6 +176,11 @@ class Person(object):  # pylint: disable=too-many-instance-attributes
     def accuracy(self):
         """The accuracy of the gps"""
         return self._accuracy
+
+    @property
+    def battery(self):
+        """The battery level"""
+        return self._battery
 
 
 class Authenticator(object):  # pylint: disable=too-few-public-methods
