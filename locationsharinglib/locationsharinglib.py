@@ -108,7 +108,7 @@ class Person(object):  # pylint: disable=too-many-instance-attributes
             self._country_code = data[1][6]
             self._charging = data[13][0]
             self._battery_level = data[13][1]
-        except IndexError:
+        except (IndexError, TypeError):
             self._logger.debug(data)
             raise InvalidData
 
@@ -410,12 +410,13 @@ class Service(Authenticator):
     def get_shared_people(self):
         """Retrieves all people that share their location with this account"""
         output = ''  # making pycharm introspection happy
-        try:
-            output = self._get_data()
-            people = [Person(info) for info in output[0]]
-        except (IndexError, TypeError):
-            self._logger.debug('Could not load people, response: %s', output)
-            return []
+        people = []
+        output = self._get_data()
+        for info in output[0]:
+            try:
+                people.append(Person(info))
+            except InvalidData:
+                self._logger.debug('Missing location or other info, dropping person with info: %s', info)
         return people
 
     def get_authenticated_person(self):
@@ -445,7 +446,6 @@ class Service(Authenticator):
                 None,
             ])
         except (IndexError, TypeError):
-            self._logger.debug('Response: %s', output)
             return None
         return person
 

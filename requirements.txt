@@ -7,6 +7,6 @@
 #
 # Please use Pipfile to update the requirements.
 #
-cachetools==2.0.1
-beautifulsoup4==4.6.0
-requests==2.19.1
+beautifulsoup4~=4.6.3
+cachetools~=2.0.1
+requests~=2.19.1

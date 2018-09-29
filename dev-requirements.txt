@@ -7,13 +7,11 @@
 #
 # Please use Pipfile to update the requirements.
 #
-nose-htmloutput==0.6.0
-logilab-common==1.4.1
-tox==2.9.1
-hypothesis==3.53.0
-coverage==4.5.1
-prospector==0.12.7
-betamax==0.8.1
-sphinx==1.7.2
-pipenv==11.9.0
-nose==1.3.7
+betamax~=0.8.1
+nose~=1.3.7
+nose-htmloutput~=0.6.0
+prospector~=1.1.2
+sphinx~=1.7.9
+sphinx-rtd-theme~=0.4.1
+tox~=3.1.3
+twine~=1.10.0

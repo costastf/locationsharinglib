@@ -49,6 +49,6 @@ if __name__ == '__main__':
                 if package.name in top_level_dependencies]
     ofile = 'requirements.txt' if _type == 'default' else 'dev-requirements.txt'
     with open(ofile, 'w') as f:
-        f.write(HEADER + '\n'.join(['{}{}'.format(package.name, package.version)
+        f.write(HEADER + '\n'.join(['{}{}'.format(package.name, package.version.replace('==', '~='))
                                     for package in packages]))
 
