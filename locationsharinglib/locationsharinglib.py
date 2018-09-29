@@ -399,11 +399,15 @@ class Service(Authenticator):
         url = 'https://www.google.com/maps/preview/locationsharing/read'
         response = self._session.get(url, params=payload)
         self._logger.debug(response.text)
-        try:
-            data = json.loads(response.text.split("'", 1)[1])
-        except (ValueError, IndexError, TypeError):
-            self._logger.exception('Unable to parse response :%s',
-                                   response.text)
+        if response.ok:
+            try:
+                data = json.loads(response.text.split("'", 1)[1])
+            except (ValueError, IndexError, TypeError):
+                self._logger.exception('Unable to parse response :%s',
+                                       response.text)
+                data = ['']
+        else:
+            self._logger.warning('Received response code:%s', response.status_code)
             data = ['']
         return data
 
