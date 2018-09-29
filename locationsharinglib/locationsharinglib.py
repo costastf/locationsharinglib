@@ -73,7 +73,7 @@ STATE_CACHING_SECONDS = 30
 STATE_CACHE = TTLCache(maxsize=1, ttl=STATE_CACHING_SECONDS)
 
 
-class Person(object):  # pylint: disable=too-many-instance-attributes
+class Person:  # pylint: disable=too-many-instance-attributes
     """A person sharing its location as coordinates"""
 
     def __init__(self, data):
@@ -188,7 +188,7 @@ class Person(object):  # pylint: disable=too-many-instance-attributes
         return self._battery_level
 
 
-class Authenticator(object):  # pylint: disable=too-few-public-methods
+class Authenticator:  # pylint: disable=too-few-public-methods
     """Handles the authentication with google"""
 
     def __init__(self, email, password, cookies_file=None):
@@ -353,7 +353,7 @@ class CookieGetter(Authenticator):  # pylint: disable=too-few-public-methods
                      'authzen/awaittx?alt=json&key={}').format(data_key)
         await_body = {'txId': data_tx_id}
 
-        print("Open the Google App, and tap 'Yes' on the prompt to sign in ...")  # pylint: disable=superfluous-parens
+        print("Open the Google App, and tap 'Yes' on the prompt to sign in ...")
 
         self._session.headers['Referer'] = response.url
         response = self._session.post(await_url, json=await_body)
