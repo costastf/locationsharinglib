@@ -119,6 +119,8 @@ class Person:  # pylint: disable=too-many-instance-attributes
                 u'Latitute         :{}'.format(self.latitude),
                 u'Longitude        :{}'.format(self.longitude),
                 u'Datetime         :{}'.format(self.datetime),
+                u'Charging         :{}'.format(self.charging),
+                u'Battery %        :{}'.format(self.battery_level),
                 u'Accuracy         :{}'.format(self._accuracy))
         return '\n'.join(text)
 
@@ -425,7 +427,6 @@ class Service(Authenticator):
 
     def get_authenticated_person(self):
         """Retrieves the person associated with this account"""
-        output = ''  # making pycharm introspection happy
         try:
             output = self._get_data()
             person = Person([
