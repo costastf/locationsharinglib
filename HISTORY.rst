@@ -21,7 +21,14 @@ History
 * Re-exposed the accuracy of the GPS.
 
 
-1.3 (2018-05--5)
+1.3 (2018-05-5)
 ----------------
 
-Implemented 2FA method and added cli tool "get-maps-cookies" to help with retrieval of cookies. (With contribution by Chris Helming)
+* Implemented 2FA method and added cli tool "get-maps-cookies" to help with retrieval of cookies. (With contribution by Chris Helming)
+
+
+3.0 (2018-09-30)
+----------------
+
+* Dropped python2 support.
+* Added battery level and charging status (Contribution by Amy Nagle)
