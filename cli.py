@@ -126,6 +126,7 @@ def setup_logging(args):
                                        '%(message)s'))
         handler.setFormatter(formatter)
         LOGGER.addHandler(handler)
+        LOGGER.setLevel(args.log_level.upper())
 
 
 def main():
