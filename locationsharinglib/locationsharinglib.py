@@ -274,9 +274,9 @@ class Authenticator:  # pylint: disable=too-few-public-methods
         payload['Passwd'] = self.password
         response = self._session.post(url, data=payload)
         if INVALID_PASSWORD_TOKEN in response.text:
-            raise InvalidCredentials
+            raise InvalidCredentials(response.text)
         elif TOO_MANY_ATTEMPTS in response.text:
-            raise TooManyFailedAuthenticationAttempts
+            raise TooManyFailedAuthenticationAttempts(response.text)
         return response
 
     def _get_required_form(self, response, action):
@@ -285,7 +285,7 @@ class Authenticator:  # pylint: disable=too-few-public-methods
                      if form.get('action', '') == action), None)
         if not form:
             self._logger.debug('Response : {}'.format(response.text))
-            raise NoExpectedFormOption
+            raise NoExpectedFormOption(response.text)
         return form
 
     def _submit_form(self, form):
@@ -302,7 +302,7 @@ class Authenticator:  # pylint: disable=too-few-public-methods
     def _find_az(self, response):
         form = self._get_required_form(response, 'Tap Yes')
         if 'Too many' in form.text:
-            raise TooManyFailedAuthenticationAttempts
+            raise TooManyFailedAuthenticationAttempts(response.text)
         return self._submit_form(form)
 
     def logout(self):
@@ -415,7 +415,6 @@ class Service(Authenticator):
 
     def get_shared_people(self):
         """Retrieves all people that share their location with this account"""
-        output = ''  # making pycharm introspection happy
         people = []
         output = self._get_data()
         for info in output[0]:
@@ -450,7 +449,8 @@ class Service(Authenticator):
                 None,
                 None,
             ])
-        except (IndexError, TypeError):
+        except (IndexError, TypeError, InvalidData):
+            self._logger.debug('Missing essential info, cannot instantiate authenticated person')
             return None
         return person
 
