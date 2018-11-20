@@ -108,11 +108,11 @@ class Person:  # pylint: disable=too-many-instance-attributes
             self._country_code = data[1][6]
             try:
                 self._charging = data[13][0]
-            except:
+            except KeyError:
                 self._charging = None
             try:
                 self._battery_level = data[13][1]
-            except:
+            except KeyError:
                 self._battery_level = None
         except (IndexError, TypeError):
             self._logger.debug(data)
