@@ -106,8 +106,14 @@ class Person:  # pylint: disable=too-many-instance-attributes
             self._accuracy = data[1][3]
             self._address = data[1][4]
             self._country_code = data[1][6]
-            self._charging = data[13][0]
-            self._battery_level = data[13][1]
+            try:
+                self._charging = data[13][0]
+            except:
+                self._charging = None
+            try:
+                self._battery_level = data[13][1]
+            except:
+                self._battery_level = None
         except (IndexError, TypeError):
             self._logger.debug(data)
             raise InvalidData
