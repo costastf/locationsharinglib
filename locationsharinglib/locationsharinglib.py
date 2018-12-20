@@ -36,6 +36,7 @@ import json
 import logging
 import pickle
 from datetime import datetime
+import pytz
 
 from bs4 import BeautifulSoup as Bfs
 from cachetools import TTLCache, cached
@@ -168,7 +169,7 @@ class Person:  # pylint: disable=too-many-instance-attributes
     @property
     def datetime(self):
         """A datetime representation of the location retrieval"""
-        return datetime.fromtimestamp(int(self.timestamp) / 1000)
+        return datetime.fromtimestamp(int(self.timestamp) / 1000, tz=pytz.utc)
 
     @property
     def address(self):
