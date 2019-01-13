@@ -66,10 +66,14 @@ LOGGER_BASENAME = '''locationsharinglib'''
 LOGGER = logging.getLogger(LOGGER_BASENAME)
 LOGGER.addHandler(logging.NullHandler())
 
-INVALID_EMAIL_MESSAGE = 'Sorry, Google doesn&#39;t recognize that email.'
-INVALID_PASSWORD_TOKEN = 'Wrong password. Try again.'  # noqa
+REPLACE_PATTERN = ")]}'\n"
+SIGN_IN_MESSAGE = 'Sign in - Google Accounts'
+INVALID_PASSWORD_TOKEN = 'INCORRECT_ANSWER_ENTERED'
 TOO_MANY_ATTEMPTS = 'Unavailable because of too many failed attempts'
+TWO_STEP_VERIFICATION = 'TWO_STEP_VERIFICATION'
 STATE_CACHING_SECONDS = 30
+
+DEBUG = not True
 
 STATE_CACHE = TTLCache(maxsize=1, ttl=STATE_CACHING_SECONDS)
 
@@ -236,8 +240,8 @@ class Authenticator:  # pylint: disable=too-few-public-methods
             return False
 
         # Check if cookies are valid
-        response = self._session.get(self._login_url)
-        if 'Sign in - Google Accounts' in response.text:
+        response = self._session.get(self._login_url, verify=not DEBUG)
+        if SIGN_IN_MESSAGE in response.text:
             message = ('The cookies provided do not provide a valid session.'
                        'Please authenticate normally and save a valid session '
                        'again')
@@ -254,63 +258,84 @@ class Authenticator:  # pylint: disable=too-few-public-methods
             raise InvalidCookies(message)
 
     def _authenticate(self):
-        initial_form = self._initialize()
-        password_form = self._submit_email(initial_form)
-        self._submit_password(password_form)
+        self._initialize()
+        self._submit_email()
+        self._submit_password()
 
     def _initialize(self):
         url = '{login_url}/ServiceLogin'.format(login_url=self._login_url)
-        response = self._session.get(url)
-        soup = Bfs(response.text, 'html.parser')
-        form = soup.find('form')
-        return self._get_hidden_form_fields(form)
+        response = self._session.get(url, verify=not DEBUG)
+        soap = Bfs(response.text, 'html.parser')
+        try:
+            data = soap.find('div', {'data-initial-sign-in-data': True})\
+                .get('data-initial-sign-in-data').replace('%.@.', '[')
+            self.req_id = json.loads(data)[30]
+        except (TypeError, KeyError):
+            self._logger.exception('Unable to parse response :%s', response.text)
+            raise InvalidData
+        except (ValueError, IndexError):
+            self._logger.exception('Unable to parse response :%s', data)
+            raise InvalidData
+        # Alternative method
+        # self.req_id = re.search(' data-initial-sign-in-data="%.*?&quot;([\w-]{100,})&quot;', response.text, re.S).group(1)
 
-    def _submit_email(self, payload):
-        url = '{login_url}/signin/v1/lookup'.format(login_url=self._login_url)
-        payload['Email'] = self.email
-        response = self._session.post(url, data=payload)
-        if INVALID_EMAIL_MESSAGE in response.text:
+    def _submit_email(self):
+        self._session.headers.update({'Google-Accounts-XSRF': '1'})
+        url = '{login_url}/_/signin/sl/lookup'.format(login_url=self._login_url)
+        req = '["{email}","{request_id}"]'.format(email=self.email, request_id=self.req_id)
+        response = self._session.post(url, data={'f.req': req}, verify=not DEBUG)
+        body = response.text.replace(REPLACE_PATTERN, '')
+        if self.email not in body:
             raise InvalidUser(self.email)
-        soup = Bfs(response.text, 'html.parser')
-        form = soup.find('form')
-        return self._get_hidden_form_fields(form)
+        try:
+            self.req_id = json.loads(body)[0][2]
+        except (ValueError, IndexError):
+            self._logger.exception('Unable to parse response :%s', body)
+            raise InvalidData
+        # Alternative method
+        # self.req_id = re.search('"([\w-]{100,})"', response.text, re.S).group(1)
 
-    def _submit_password(self, payload):
-        url = ('{login_url}/signin/'
-               'challenge/sl/password').format(login_url=self._login_url)
-        payload['Passwd'] = self.password
-        response = self._session.post(url, data=payload)
-        if INVALID_PASSWORD_TOKEN in response.text:
-            raise InvalidCredentials(response.text)
-        elif TOO_MANY_ATTEMPTS in response.text:
-            raise TooManyFailedAuthenticationAttempts(response.text)
+    def _submit_password(self):
+        url = '{login_url}/_/signin/sl/challenge'.format(login_url=self._login_url)
+        # Todo: I really don't know how to make this sturdier
+        req = '["{req_id}",null,null,null,[1,null,null,null,["{password}"]]]'\
+            .format(req_id=self.req_id, password=self.password)
+        response = self._session.post(url, data={'f.req': req}, verify=not DEBUG)
+        body = response.text.replace(REPLACE_PATTERN, '')
+        if INVALID_PASSWORD_TOKEN in body:
+            raise InvalidCredentials(body)
+        elif TOO_MANY_ATTEMPTS in body:  # Todo: update TOO_MANY_ATTEMPTS constant?
+            raise TooManyFailedAuthenticationAttempts(body)
+        elif TWO_STEP_VERIFICATION in body:
+            self._handle_prompt(body)
+
+    def _handle_prompt(self, body):
+        # Borrowed with slight modification from https://git.io/vxu1A
+        try:
+            data = json.loads(body)
+            # Todo: I really don't know how to make this sturdier
+            data_key = data[0][10][0][0][23]['5004'][12]
+            data_tx_id = data[0][10][0][0][23]['5004'][1]
+            data_tl = data[1][2]
+        except (AttributeError, IndexError, KeyError):
+            message = 'Unexpected response received :{}'.format(body)
+            raise Unexpected2FAResponse(message)
+        await_url = ('https://content.googleapis.com/cryptauth/v1/'
+                     'authzen/awaittx?alt=json&key={}').format(data_key)
+        await_body = {'txId': data_tx_id}
+
+        print("Open the Google App, and tap 'Yes' on the prompt to sign in ...")
+
+        self._session.headers['Referer'] = '{login_url}/signin/v2/challenge/az'.format(login_url=self._login_url)
+        response = self._session.post(await_url, json=await_body, verify=not DEBUG)
+        data = json.loads(response.text)
+
+        url = '{login_url}/_/signin/challenge?TL={tl}'.format(login_url=self._login_url, tl=data_tl)
+        req = '["{req_id}",null,5,null,[4,null,null,null,null,null,null,null,null,["{tx_token}",1,true]]]' \
+            .format(req_id=self.req_id, tx_token=data['txToken'])
+        response = self._session.post(url, data={'f.req': req}, verify=not DEBUG)
+        response.raise_for_status()
         return response
-
-    def _get_required_form(self, response, action):
-        soup = Bfs(response.text, 'html.parser')
-        form = next((form for form in soup.findAll('form')
-                     if form.get('action', '') == action), None)
-        if not form:
-            self._logger.debug('Response : {}'.format(response.text))
-            raise NoExpectedFormOption(response.text)
-        return form
-
-    def _submit_form(self, form):
-        url = '{login_url}{action}'.format(login_url=self._login_url,
-                                           action=form.get('action'))
-        payload = self._get_hidden_form_fields(form)
-        response = self._session.post(url, data=payload)
-        return response
-
-    def _skip_challenge(self, response):
-        form = self._get_required_form(response, '/signin/challenge/skip')
-        return self._submit_form(form)
-
-    def _find_az(self, response):
-        form = self._get_required_form(response, 'Tap Yes')
-        if 'Too many' in form.text:
-            raise TooManyFailedAuthenticationAttempts(response.text)
-        return self._submit_form(form)
 
     def logout(self):
         """Logs the session out, invalidating the cookies
@@ -323,11 +348,6 @@ class Authenticator:  # pylint: disable=too-few-public-methods
         response = self._session.get(url)
         return response.ok
 
-    @staticmethod
-    def _get_hidden_form_fields(form):
-        return {field.get('name'): field.get('value')
-                for field in form.find_all('input')}
-
 
 class CookieGetter(Authenticator):  # pylint: disable=too-few-public-methods
     """Object to interactively get the cookies"""
@@ -336,52 +356,6 @@ class CookieGetter(Authenticator):  # pylint: disable=too-few-public-methods
         super(CookieGetter, self).__init__(email,
                                            password,
                                            cookies_file=cookies_file)
-
-    def _authenticate(self):
-        initial_form = self._initialize()
-        password_form = self._submit_email(initial_form)
-        response = self._submit_password(password_form)
-        if 'challenge/az' in response.url:
-            self._handle_prompt(response)
-        elif 'challenge/' in response.url:
-            selection_form = self._skip_challenge(response)
-            az_form = self._find_az(selection_form)
-            self._handle_prompt(az_form)
-
-    def _handle_prompt(self, response):
-        # Borrowed with slight modification from https://git.io/vxu1A
-        soup = Bfs(response.text, 'html.parser')
-        challenge_url = response.url.split("?")[0]
-        try:
-            data_key = soup.find('div', {'data-api-key': True}).get('data-api-key')
-            data_tx_id = soup.find('div', {'data-tx-id': True}).get('data-tx-id')
-        except AttributeError:
-            message = 'Unexpected response received :{}'.format(response.text)
-            raise Unexpected2FAResponse(message)
-        await_url = ('https://content.googleapis.com/cryptauth/v1/'
-                     'authzen/awaittx?alt=json&key={}').format(data_key)
-        await_body = {'txId': data_tx_id}
-
-        print("Open the Google App, and tap 'Yes' on the prompt to sign in ...")
-
-        self._session.headers['Referer'] = response.url
-        response = self._session.post(await_url, json=await_body)
-        parsed = json.loads(response.text)
-
-        payload = {
-            'challengeId': soup.find('input',
-                                     {'name': 'challengeId'}).get('value'),
-            'challengeType': soup.find('input',
-                                       {'name': 'challengeType'}).get('value'),
-            'TL': soup.find('input', {'name': 'TL'}).get('value'),
-            'gxf': soup.find('input', {'name': 'gxf'}).get('value'),
-            'token': parsed['txToken'],
-            'action': soup.find('input', {'name': 'action'}).get('value'),
-            'TrustDevice': 'on',
-        }
-        response = self._session.post(challenge_url, data=payload)
-        response.raise_for_status()
-        return response
 
 
 class Service(Authenticator):
@@ -406,7 +380,7 @@ class Service(Authenticator):
                           '1e1!6m9!1e12!2i2!26m1!4b1!30m1!'
                           '1f1.3953487873077393!39b1!44e1!50e0!23i4111425')}
         url = 'https://www.google.com/maps/preview/locationsharing/read'
-        response = self._session.get(url, params=payload)
+        response = self._session.get(url, params=payload, verify=not DEBUG)
         self._logger.debug(response.text)
         if response.ok:
             try:
