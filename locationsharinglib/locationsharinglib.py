@@ -47,7 +47,6 @@ from .locationsharinglibexceptions import (InvalidCredentials,
                                            InvalidUser,
                                            InvalidCookies,
                                            TooManyFailedAuthenticationAttempts,
-                                           NoExpectedFormOption,
                                            Unexpected2FAResponse)
 
 __author__ = '''Costas Tyfoxylos <costas.tyf@gmail.com>'''
@@ -68,7 +67,7 @@ LOGGER.addHandler(logging.NullHandler())
 
 REPLACE_PATTERN = ")]}'\n"
 SIGN_IN_MESSAGE = 'Sign in - Google Accounts'
-INVALID_PASSWORD_TOKEN = 'INCORRECT_ANSWER_ENTERED'
+INVALID_PASSWORD_TOKEN = 'INCORRECT_ANSWER_ENTERED'  # noqa
 TOO_MANY_ATTEMPTS = 'Unavailable because of too many failed attempts'
 TWO_STEP_VERIFICATION = 'TWO_STEP_VERIFICATION'
 STATE_CACHING_SECONDS = 30
@@ -215,6 +214,7 @@ class Authenticator:  # pylint: disable=too-few-public-methods
                                       'Referer': 'https://www.google.com'})
         self.email = email
         self.password = password
+        self.req_id = None
         self._login_url = 'https://accounts.google.com'
 
         # Try login with cookie
@@ -277,7 +277,8 @@ class Authenticator:  # pylint: disable=too-few-public-methods
             self._logger.exception('Unable to parse response :%s', data)
             raise InvalidData
         # Alternative method
-        # self.req_id = re.search(' data-initial-sign-in-data="%.*?&quot;([\w-]{100,})&quot;', response.text, re.S).group(1)
+        # self.req_id = re.search(' data-initial-sign-in-data="%.*?&quot;([\w-]{100,})&quot;',
+        # response.text, re.S).group(1)
 
     def _submit_email(self):
         self._session.headers.update({'Google-Accounts-XSRF': '1'})
@@ -297,14 +298,13 @@ class Authenticator:  # pylint: disable=too-few-public-methods
 
     def _submit_password(self):
         url = '{login_url}/_/signin/sl/challenge'.format(login_url=self._login_url)
-        # Todo: I really don't know how to make this sturdier
         req = '["{req_id}",null,null,null,[1,null,null,null,["{password}"]]]'\
             .format(req_id=self.req_id, password=self.password)
         response = self._session.post(url, data={'f.req': req}, verify=not DEBUG)
         body = response.text.replace(REPLACE_PATTERN, '')
         if INVALID_PASSWORD_TOKEN in body:
             raise InvalidCredentials(body)
-        elif TOO_MANY_ATTEMPTS in body:  # Todo: update TOO_MANY_ATTEMPTS constant?
+        elif TOO_MANY_ATTEMPTS in body:
             raise TooManyFailedAuthenticationAttempts(body)
         elif TWO_STEP_VERIFICATION in body:
             self._handle_prompt(body)
@@ -313,7 +313,6 @@ class Authenticator:  # pylint: disable=too-few-public-methods
         # Borrowed with slight modification from https://git.io/vxu1A
         try:
             data = json.loads(body)
-            # Todo: I really don't know how to make this sturdier
             data_key = data[0][10][0][0][23]['5004'][12]
             data_tx_id = data[0][10][0][0][23]['5004'][1]
             data_tl = data[1][2]

@@ -33,7 +33,7 @@ setup(
     author='''Costas Tyfoxylos''',
     author_email='''costas.tyf@gmail.com''',
     url='''https://github.com/costastf/locationsharinglib''',
-    packages=find_packages(where='.', exclude=('tests', 'hooks')),
+    packages=find_packages(where='.', exclude=('tests', 'hooks', '_CI*')),
     package_dir={'''locationsharinglib''':
                  '''locationsharinglib'''},
     include_package_data=True,

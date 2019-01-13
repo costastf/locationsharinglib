@@ -22,7 +22,7 @@ HEADER = """#
 def get_top_level_dependencies(package_type):
     validate_package_type(package_type)
     _type = 'packages' if package_type == 'default' else 'dev-packages'
-    return Project().parsed_pipfile.get(_type, {}).keys()
+    return list(Project().parsed_pipfile.get(_type, {}).keys())
 
 
 def get_packages(package_type):
