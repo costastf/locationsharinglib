@@ -24,7 +24,7 @@ twine = "~=1.10.0"
 
 [packages]
 
-requests = "~=2.20.0"
+requests = "~=2.21.0"
 beautifulsoup4 = "~=4.6.0"
 cachetools = "~=2.0.1"
 

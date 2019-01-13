@@ -9,4 +9,4 @@
 #
 beautifulsoup4~=4.6.3
 cachetools~=2.0.1
-requests~=2.20.1
+requests~=2.21.0
