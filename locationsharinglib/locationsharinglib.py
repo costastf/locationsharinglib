@@ -126,7 +126,7 @@ class Person:  # pylint: disable=too-many-instance-attributes
         text = (u'Full name        :{}'.format(self.full_name),
                 u'Nickname         :{}'.format(self.nickname),
                 u'Current location :{}'.format(self.address),
-                u'Latitute         :{}'.format(self.latitude),
+                u'Latitude         :{}'.format(self.latitude),
                 u'Longitude        :{}'.format(self.longitude),
                 u'Datetime         :{}'.format(self.datetime),
                 u'Charging         :{}'.format(self.charging),
