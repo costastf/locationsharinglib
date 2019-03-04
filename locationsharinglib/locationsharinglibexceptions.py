@@ -42,29 +42,9 @@ __email__ = '''<costas.tyf@gmail.com>'''
 __status__ = '''Development'''  # "Prototype", "Development", "Production".
 
 
-class InvalidData(Exception):
-    """The data received do not fit the expected format"""
-
-
-class InvalidCredentials(Exception):
-    """The provided credentials were not accepted"""
-
-
-class InvalidUser(Exception):
-    """The email or phone is not recognised as belonging to a valid user"""
-
-
 class InvalidCookies(Exception):
     """The cookies provided do not provide a valid session"""
 
 
-class TooManyFailedAuthenticationAttempts(Exception):
-    """The authentication attempt quota has been reached"""
-
-
-class NoExpectedFormOption(Exception):
-    """There was no form presented with the expected option"""
-
-
-class Unexpected2FAResponse(Exception):
-    """The response received was not expected"""
+class InvalidData(Exception):
+    """The data received do not fit the expected format"""

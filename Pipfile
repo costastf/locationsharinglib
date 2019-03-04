@@ -22,7 +22,7 @@ betamax = "~=0.8.1"
 
 # Releasing
 semver = "~=2.8.1"
-gitwrapperlib = "~=0.8.2"
+gitwrapperlib = "~=0.9.1"
 
 # Uploading
 twine = "~=1.12.1"
@@ -36,8 +36,7 @@ emoji = "~=0.5.1"
 
 coloredlogs = "~=10.0"
 
-requests = "~=2.20.0"
-beautifulsoup4 = "~=4.6.0"
+requests = "~=2.21.0"
 cachetools = "~=2.0.1"
 
 [requires]
