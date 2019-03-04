@@ -89,8 +89,8 @@ class Service:
         try:
             session = Session()
             cfile = open(cookies_file, 'rb')
-            session.cookies = pickle.load(cfile)
-        except KeyError:
+            session.cookies.update(pickle.load(cfile))
+        except (KeyError, pickle.UnpicklingError, AttributeError, EOFError, ValueError):
             message = 'Could not load pickle file, probably invalid pickle.'
             raise InvalidCookies(message)
         except FileNotFoundError:
