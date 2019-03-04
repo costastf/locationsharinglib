@@ -29,7 +29,7 @@ project_root = os.path.dirname(cwd)
 
 # Run apidoc to traverse the project directory and add all modules to the docs
 import sphinx.apidoc
-sphinx.apidoc.main(argv=['_', '-f', '-o', os.path.join(project_root, 'docs'),
+sphinx.apidoc.main(argv=['-f', '-o', os.path.join(project_root, 'docs'),
                    os.path.join(project_root, '''locationsharinglib''')])
 
 # Insert the project root dir as the first element in the PYTHONPATH.

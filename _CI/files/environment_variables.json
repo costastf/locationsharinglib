@@ -1,0 +1,6 @@
+{
+    "PIPENV_VENV_IN_PROJECT": "true",
+    "PIPENV_DEFAULT_PYTHON_VERSION": "3.7",
+    "PYPI_URL": "https://upload.pypi.org/legacy/",
+    "PROJECT_SLUG": "locationsharinglib"
+}

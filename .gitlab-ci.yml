@@ -3,48 +3,31 @@ stages:
   - test
   - build
   - upload
-  - docs
 
 lint:
-  tags:
-    - docker
+  tags: [docker]
   stage: lint
-  image: PATH_TO_RUNNER
-  script:
-    - _CI/scripts/lint
+  image: IMAGE_WITH_PYTHON37_AND_PIPENV
+  script: _CI/scripts/lint.py
 
 test:
-  tags:
-    - docker
+  tags: [docker]
   stage: test
-  image: PATH_TO_RUNNER
-  script:
-    - _CI/scripts/test
+  image: IMAGE_WITH_PYTHON37_AND_PIPENV
+  script: _CI/scripts/test.py
 
 build:
-  tags:
-    - docker
+  tags: [docker]
   stage: build
-  image: PATH_TO_RUNNER
-  script:
-    - _CI/scripts/build
+  image: IMAGE_WITH_PYTHON37_AND_PIPENV
+  script: _CI/scripts/build.py
 
 upload:
-  tags:
-    - docker
+  tags: [docker]
   stage: upload
-  image: PATH_TO_RUNNER
+  image: IMAGE_WITH_PYTHON37_AND_PIPENV
   only:
     - tags
-  script:
-    - _CI/scripts/upload
-
-docs:
-  tags:
-    - docker
-  stage: docs
-  image: PATH_TO_RUNNER
-  only:
-    - tags
-  script:
-    - _CI/scripts/document
+  except:
+    - branches
+  script: _CI/scripts/upload.py

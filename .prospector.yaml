@@ -2,11 +2,11 @@ pep257:
   disable:
     - D203
     - D212
-    - D105
     - D107
+    - D105
+    - D213
     - D406
     - D407
-    - D213
 ignore-paths:
   - _CI
   - build

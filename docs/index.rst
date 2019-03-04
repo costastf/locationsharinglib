@@ -1,5 +1,5 @@
 .. locationsharinglib documentation master file, created by
-   sphinx-quickstart on 2017-12-24.
+   sphinx-quickstart on 2019-03-04.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 

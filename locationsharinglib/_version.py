@@ -35,7 +35,7 @@ import os
 
 __author__ = '''Costas Tyfoxylos <costas.tyf@gmail.com>'''
 __docformat__ = '''google'''
-__date__ = '''2017-12-24'''
+__date__ = '''24-12-2017'''
 __copyright__ = '''Copyright 2017, Costas Tyfoxylos'''
 __license__ = '''MIT'''
 __maintainer__ = '''Costas Tyfoxylos'''

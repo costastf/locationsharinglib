@@ -2,31 +2,41 @@
 Usage
 =====
 
+
+To develop on locationsharinglib:
+
+.. code-block:: bash
+
+    # The following commands require pipenv as a dependency
+
+    # To lint the project
+    _CI/scripts/lint.py
+
+    # To execute the testing
+    _CI/scripts/test.py
+
+    # To create a graph of the package and dependency tree
+    _CI/scripts/graph.py
+
+    # To build a package of the project under the directory "dist/"
+    _CI/scripts/build.py
+
+    # To see the package version
+    _CI/scipts/tag.py
+
+    # To bump semantic versioning [--major|--minor|--patch]
+    _CI/scipts/tag.py --major|--minor|--patch
+
+    # To upload the project to a pypi repo if user and password are properly provided
+    _CI/scripts/upload.py
+
+    # To build the documentation of the project
+    _CI/scripts/document.py
+
+
 To use locationsharinglib in a project:
 
 .. code-block:: python
 
-    from locationsharinglib import Service
-    service = Service(username, password, cookies_file="YOUR_COOKIES_FILE")
-    for person in service.get_all_people():
-        print(person)
-
-
-To get the cookies you can use the cli tool:
-
-.. code-block:: bash
-
-    $ get-maps-cookies --help
-    usage: get-maps-cookies [-h] --email EMAIL --password PASSWORD
-                            [--cookies-file COOKIES_FILE]
-
-    A tool to interactively handle authentication for google maps and 2FA
-
-    optional arguments:
-      -h, --help            show this help message and exit
-      --email EMAIL, -e EMAIL
-                            The email of the account to authenticate
-      --password PASSWORD, -p PASSWORD
-                            The password of the account to authenticate
-      --cookies-file COOKIES_FILE, -c COOKIES_FILE
-                            The file to output the cookies to
+    from locationsharinglib import Locationsharinglib
+    locationsharinglib = Locationsharinglib()

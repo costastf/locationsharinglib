@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# File: __init__.py
+# File: lint.py
 #
-# Copyright 2017 Costas Tyfoxylos
+# Copyright 2018 Costas Tyfoxylos
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to
@@ -23,16 +23,35 @@
 #  DEALINGS IN THE SOFTWARE.
 #
 
-"""
-.. _Google Python Style Guide:
-   http://google.github.io/styleguide/pyguide.html
-"""
+import logging
 
-__author__ = '''Costas Tyfoxylos <costas.tyf@gmail.com>'''
-__docformat__ = '''google'''
-__date__ = '''24-12-2017'''
-__copyright__ = '''Copyright 2017, Costas Tyfoxylos'''
-__license__ = '''MIT'''
-__maintainer__ = '''Costas Tyfoxylos'''
-__email__ = '''<costas.tyf@gmail.com>'''
-__status__ = '''Development'''  # "Prototype", "Development", "Production".
+# this sets up everything and MUST be included before any third party module in every step
+import _initialize_template
+
+from bootstrap import bootstrap
+from emoji import emojize
+from library import execute_command
+
+
+# This is the main prefix used for logging
+LOGGER_BASENAME = '''_CI.lint'''
+LOGGER = logging.getLogger(LOGGER_BASENAME)
+LOGGER.addHandler(logging.NullHandler())
+
+
+def lint():
+    bootstrap()
+    success = execute_command('prospector -DFM')
+    if success:
+        LOGGER.info('%s No linting errors found! %s',
+                    emojize(':white_heavy_check_mark:'),
+                    emojize(':thumbs_up:'))
+    else:
+        LOGGER.error('%s Linting errors found! %s',
+                     emojize(':cross_mark:'),
+                     emojize(':crying_face:'))
+    raise SystemExit(0 if success else 1)
+
+
+if __name__ == '__main__':
+    lint()

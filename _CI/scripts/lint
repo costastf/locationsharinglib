@@ -1,6 +1,0 @@
-#!/bin/bash --login
-cd $(dirname $0)/../..
-
-. _CI/scripts/bootstrap
-
-pipenv run prospector -DFM && echo No issues found

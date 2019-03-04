@@ -1,6 +1,6 @@
-# 
+#
 # Please do not manually update this file since the requirements are managed
-# by pipenv through Pipfile and Pipfile.lock . 
+# by pipenv through Pipfile and Pipfile.lock .
 #
 # This file is created and managed automatically by the template and it is left
 # here only for backwards compatibility reasons with python's ecosystem.
@@ -8,10 +8,15 @@
 # Please use Pipfile to update the requirements.
 #
 betamax~=0.8.1
+coloredlogs~=10.0
+coverage~=4.5.2
+emoji~=0.5.1
+flake8~=3.5.0
+gitwrapperlib~=0.8.2
 nose~=1.3.7
 nose-htmloutput~=0.6.0
 prospector~=1.1.6.2
-sphinx~=1.7.9
-sphinx-rtd-theme~=0.4.2
-tox~=3.1.3
-twine~=1.10.0
+semver~=2.8.1
+sphinx~=1.8.4
+tox~=3.5.3
+twine~=1.12.1
