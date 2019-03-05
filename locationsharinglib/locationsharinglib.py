@@ -66,12 +66,9 @@ TOO_MANY_ATTEMPTS = 'Unavailable because of too many failed attempts'
 TWO_STEP_VERIFICATION = 'TWO_STEP_VERIFICATION'
 STATE_CACHING_SECONDS = 30
 
-DEBUG = not True
-
 STATE_CACHE = TTLCache(maxsize=1, ttl=STATE_CACHING_SECONDS)
-NON_JS_LOGIN_HEURISTIC = 'method="post" action="https://accounts.google.com/signin'
-JS_LOGIN_HEURISTIC = 'method="post" novalidate jsaction="submit:'
-LOGIN_URL = 'https://accounts.google.com'
+LOGIN_HEURISTIC = 'Find local businesses, view maps and get driving directions in Google Maps.'
+MAPS_URL = 'https://www.google.com/maps'
 
 
 class Service:
@@ -84,8 +81,7 @@ class Service:
         self.email = authenticating_account
         self._session = self._validate_cookie(cookies_file or '')
 
-    @staticmethod
-    def _validate_cookie(cookies_file):
+    def _validate_cookie(self, cookies_file):
         try:
             session = Session()
             cfile = open(cookies_file, 'rb')
@@ -96,10 +92,9 @@ class Service:
         except FileNotFoundError:
             message = 'Could not open pickle file, either file does not exist or no read access.'
             raise InvalidCookies(message)
-
-        response = session.get(LOGIN_URL)
-        if any([login_message in response.text for login_message in [NON_JS_LOGIN_HEURISTIC,
-                                                                     JS_LOGIN_HEURISTIC]]):
+        response = session.get(MAPS_URL)
+        self._logger.debug(response.content)
+        if LOGIN_HEURISTIC not in response.text:
             message = ('The cookies provided do not provide a valid session.'
                        'Please create another cookie file and try again.')
             raise InvalidCookies(message)
@@ -119,7 +114,7 @@ class Service:
                           '1e1!6m9!1e12!2i2!26m1!4b1!30m1!'
                           '1f1.3953487873077393!39b1!44e1!50e0!23i4111425')}
         url = 'https://www.google.com/maps/preview/locationsharing/read'
-        response = self._session.get(url, params=payload, verify=not DEBUG)
+        response = self._session.get(url, params=payload, verify=True)
         self._logger.debug(response.text)
         if response.ok:
             try:
@@ -137,7 +132,9 @@ class Service:
         """Retrieves all people that share their location with this account"""
         people = []
         output = self._get_data()
-        for info in output[0]:
+        self._logger.debug(output)
+        shared_entries = output[0] or []
+        for info in shared_entries:
             try:
                 people.append(Person(info))
             except InvalidData:
@@ -148,6 +145,7 @@ class Service:
         """Retrieves the person associated with this account"""
         try:
             output = self._get_data()
+            self._logger.debug(output)
             person = Person([
                 self.email,
                 output[9][1],
