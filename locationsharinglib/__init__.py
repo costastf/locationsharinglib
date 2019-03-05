@@ -32,13 +32,8 @@ Import all parts from locationsharinglib here
    http://google.github.io/styleguide/pyguide.html
 """
 from ._version import __version__
-from .locationsharinglibexceptions import (InvalidData,
-                                           InvalidCredentials,
-                                           InvalidCookies,
-                                           TooManyFailedAuthenticationAttempts,
-                                           NoExpectedFormOption,
-                                           Unexpected2FAResponse)
-from .locationsharinglib import Service, Person, CookieGetter
+from .locationsharinglibexceptions import InvalidCookies, InvalidData
+from .locationsharinglib import Service, Person
 
 __author__ = '''Costas Tyfoxylos <costas.tyf@gmail.com>'''
 __docformat__ = '''google'''
@@ -55,12 +50,7 @@ assert __version__
 # assert objects
 assert Service
 assert Person
-assert CookieGetter
 
 # assert exceptions
-assert InvalidData
-assert InvalidCredentials
 assert InvalidCookies
-assert TooManyFailedAuthenticationAttempts
-assert NoExpectedFormOption
-assert Unexpected2FAResponse
+assert InvalidData
