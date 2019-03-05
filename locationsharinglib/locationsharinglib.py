@@ -59,11 +59,6 @@ LOGGER_BASENAME = '''locationsharinglib'''
 LOGGER = logging.getLogger(LOGGER_BASENAME)
 LOGGER.addHandler(logging.NullHandler())
 
-REPLACE_PATTERN = ")]}'\n"
-SIGN_IN_MESSAGE = 'Sign in - Google Accounts'
-INVALID_PASSWORD_TOKEN = 'INCORRECT_ANSWER_ENTERED'  # noqa
-TOO_MANY_ATTEMPTS = 'Unavailable because of too many failed attempts'
-TWO_STEP_VERIFICATION = 'TWO_STEP_VERIFICATION'
 STATE_CACHING_SECONDS = 30
 
 STATE_CACHE = TTLCache(maxsize=1, ttl=STATE_CACHING_SECONDS)
