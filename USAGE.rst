@@ -38,5 +38,9 @@ To use locationsharinglib in a project:
 
 .. code-block:: python
 
-    from locationsharinglib import Locationsharinglib
-    locationsharinglib = Locationsharinglib()
+    from locationsharinglib import Service
+    cookies_file = 'FILE_CREATED_BY_MAPSCOOKIEGETTERCLI_AUTHENTICATION_PROCESS'
+    google_email = 'username@gmail.com'
+    service = Service(cookies_file=cookies_file, authenticating_account=google_email)
+    for person in service.get_all_people():
+        print(person)
