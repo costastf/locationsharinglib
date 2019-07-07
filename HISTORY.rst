@@ -19,3 +19,9 @@ History
 ------------------
 
 * Removed wrongly placed files in the root of the virtual environment
+
+
+4.0.2 (07-07-2019)
+------------------
+
+* Fixes issue when the battery level is not reported by specific brands of mobiles
