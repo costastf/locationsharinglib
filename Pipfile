@@ -34,9 +34,10 @@ emoji = "~=0.5.2"
 [packages]
 
 coloredlogs = "~=10.0"
-
 requests = "~=2.21.0"
 cachetools = "~=2.0.1"
+pytz = "~=2019.2"
+dataclasses = {version = "~=0.6", markers="python_version == '3.6'"}
 
 [requires]
 python_version = "3"
