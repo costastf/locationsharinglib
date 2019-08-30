@@ -121,11 +121,16 @@ class Service:
         return session
 
     def _load_text_cookies(self, session, cookies_file):
-        text = cookies_file.read().decode('utf-8')
-        cookies = [Cookie(*line.strip().split()) for line in text.splitlines()
-                   if not line.strip().startswith('#') and line]
-        for cookie in cookies:
-            session.cookies.set(**cookie.to_dict())
+        try:
+            text = cookies_file.read().decode('utf-8')
+            cookies = [Cookie(*line.strip().split()) for line in text.splitlines()
+                       if not line.strip().startswith('#') and line]
+            for cookie in cookies:
+                session.cookies.set(**cookie.to_dict())
+        except Exception:
+            self._logger.exception('Things broke...')
+            message = 'Could not properly load cookie text file.'
+            raise InvalidCookies(message)
         return session
 
     @cached(STATE_CACHE)
