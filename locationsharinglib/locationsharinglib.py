@@ -67,8 +67,11 @@ STATE_CACHING_SECONDS = 30
 STATE_CACHE = TTLCache(maxsize=1, ttl=STATE_CACHING_SECONDS)
 ACCOUNT_URL = 'https://myaccount.google.com/?hl=en'
 
+
 @dataclass
 class Cookie:
+    """Models a cookie"""
+
     domain: str
     flag: bool
     path: str
@@ -78,6 +81,12 @@ class Cookie:
     value: str
 
     def to_dict(self):
+        """Returns the cookie as a dictionary
+
+        Returns:
+            cookie (dict): The dictionary with the required values of the cookie
+
+        """
         return {key: getattr(self, key) for key in ('domain', 'name', 'value', 'path')}
 
 
