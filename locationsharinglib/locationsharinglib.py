@@ -65,9 +65,7 @@ LOGGER.addHandler(logging.NullHandler())
 STATE_CACHING_SECONDS = 30
 
 STATE_CACHE = TTLCache(maxsize=1, ttl=STATE_CACHING_SECONDS)
-LOGIN_HEURISTIC = 'Find local businesses, view maps and get driving directions in Google Maps.'
-MAPS_URL = 'https://www.google.com/maps'
-
+ACCOUNT_URL = 'https://myaccount.google.com/?hl=en'
 
 @dataclass
 class Cookie:
@@ -95,10 +93,12 @@ class Service:
 
     def _validate_cookie(self, cookies_file):
         session = self._get_authenticated_session(cookies_file)
-        response = session.get(MAPS_URL)
-        self._logger.debug(response.content)
-        if LOGIN_HEURISTIC not in response.text:
-            message = ('The cookies provided do not provide a valid session.'
+        response = session.get(ACCOUNT_URL)
+        self._logger.debug('Getting personal account page and its cookies...\n %s', response.content)
+        response = session.get(ACCOUNT_URL)
+        self._logger.debug('Validating access to personal account...')
+        if response.history:
+            message = ('The cookies provided do not provide a valid session, could not reach personal account page.'
                        'Please create another cookie file and try again.')
             raise InvalidCookies(message)
         return session
@@ -112,6 +112,7 @@ class Service:
             raise InvalidCookies(message)
         try:
             session.cookies.update(pickle.load(cfile))
+            self._logger.debug('Successfully loaded pickled cookie!')
             warnings.warn('Pickled cookie format is going to be deprecated in a future version, '
                           'please start using a text base cookie file!')
         except (pickle.UnpicklingError, KeyError, AttributeError, EOFError, ValueError):
