@@ -32,12 +32,15 @@ Main code for locationsharinglib
 """
 
 from __future__ import unicode_literals
+
 import json
 import logging
 import pickle
+import warnings
+from dataclasses import dataclass
 from datetime import datetime
-import pytz
 
+import pytz
 from cachetools import TTLCache, cached
 from requests import Session
 
@@ -66,6 +69,20 @@ LOGIN_HEURISTIC = 'Find local businesses, view maps and get driving directions i
 MAPS_URL = 'https://www.google.com/maps'
 
 
+@dataclass
+class Cookie:
+    domain: str
+    flag: bool
+    path: str
+    secure: bool
+    expiry: int
+    name: str
+    value: str
+
+    def to_dict(self):
+        return {key: getattr(self, key) for key in ('domain', 'name', 'value', 'path')}
+
+
 class Service:
     """An object modeling the service to retrieve locations"""
 
@@ -77,22 +94,38 @@ class Service:
         self._session = self._validate_cookie(cookies_file or '')
 
     def _validate_cookie(self, cookies_file):
-        try:
-            session = Session()
-            cfile = open(cookies_file, 'rb')
-            session.cookies.update(pickle.load(cfile))
-        except (KeyError, pickle.UnpicklingError, AttributeError, EOFError, ValueError):
-            message = 'Could not load pickle file, probably invalid pickle.'
-            raise InvalidCookies(message)
-        except FileNotFoundError:
-            message = 'Could not open pickle file, either file does not exist or no read access.'
-            raise InvalidCookies(message)
+        session = self._get_authenticated_session(cookies_file)
         response = session.get(MAPS_URL)
         self._logger.debug(response.content)
         if LOGIN_HEURISTIC not in response.text:
             message = ('The cookies provided do not provide a valid session.'
                        'Please create another cookie file and try again.')
             raise InvalidCookies(message)
+        return session
+
+    def _get_authenticated_session(self, cookies_file):
+        session = Session()
+        try:
+            cfile = open(cookies_file, 'rb')
+        except FileNotFoundError:
+            message = 'Could not open cookies file, either file does not exist or no read access.'
+            raise InvalidCookies(message)
+        try:
+            session.cookies.update(pickle.load(cfile))
+            warnings.warn('Pickled cookie format is going to be deprecated in a future version, '
+                          'please start using a text base cookie file!')
+        except (pickle.UnpicklingError, KeyError, AttributeError, EOFError, ValueError):
+            self._logger.debug('Trying to load text based cookies.')
+            session = self._load_text_cookies(session, cfile)
+        cfile.close()
+        return session
+
+    def _load_text_cookies(self, session, cookies_file):
+        text = cookies_file.read().decode('utf-8')
+        cookies = [Cookie(*line.strip().split()) for line in text.splitlines()
+                   if not line.strip().startswith('#') and line]
+        for cookie in cookies:
+            session.cookies.set(**cookie.to_dict())
         return session
 
     @cached(STATE_CACHE)
