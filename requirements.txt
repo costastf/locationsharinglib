@@ -9,4 +9,6 @@
 #
 cachetools~=2.0.1
 coloredlogs~=10.0
+dataclasses~=0.6 ; python_version == '3.6'
+pytz~=2019.2
 requests~=2.21.0
