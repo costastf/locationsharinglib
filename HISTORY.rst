@@ -25,3 +25,9 @@ History
 ------------------
 
 * Fixes issue when the battery level is not reported by specific brands of mobiles
+
+
+4.1.0 (01-09-2019)
+------------------
+
+* Implemented support for text based cookies compatible with curl and wget that can be retrieved from addons from the browser.
