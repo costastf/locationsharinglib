@@ -32,7 +32,7 @@ import stat
 import tempfile
 import warnings
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import field
 from subprocess import Popen, PIPE, check_output, CalledProcessError
 
 from pipenv.project import Project
@@ -50,13 +50,57 @@ LOGGER = logging.getLogger(LOGGER_BASENAME)
 LOGGER.addHandler(logging.NullHandler())
 
 
-@dataclass()
 class Package:
-    name: str
-    version: str
-    index: str
-    markers: str
-    hashes: list
+    def __init__(self,
+                 name: str,
+                 full_version: str,
+                 index: str = "",
+                 markers: str = "",
+                 hashes: list = field(default=list)) -> None:
+        self.name = name
+        self.index = index
+        self.markers = markers
+        self.hashes = hashes
+        self.comparator, self.version = self._decompose_full_version(full_version)
+
+    @staticmethod
+    def _decompose_full_version(full_version: str) -> (str, str):
+        comparator = ""
+        version = "*"
+        if full_version == "*":
+            return comparator, version
+        # We need to check for the most common pinning cases
+        # >, <, <=, >=, ~=, ==
+        # So we can know where the pin starts and where it ends,
+        # iteration should start from 2 character then backwards
+        operators = ['<=', '>=', '~=', '==', '<', '>']
+        if isinstance(full_version, dict):
+            full_version = full_version.get('version')
+        for operator in operators:
+            if full_version.startswith(operator):
+                break
+        else:
+            raise ValueError(f"Could not find where the comparator pin ends in {full_version}")
+        version = full_version[len(operator):]
+
+        return operator, version
+
+    @property
+    def full_version(self):
+        return f"{self.comparator}{self.version}"
+
+    @full_version.setter
+    def full_version(self, full_version):
+        self.comparator, self.version = self._decompose_full_version(full_version)
+
+    # Processes the two versions both in Pipfile and Pipfile.lock, and matches
+    # the pinning from the Pipfile and the exact version from the Pipfile.lock
+    def compare_versions(self, pipfile_full_version, pipfile_lock_full_version):
+        pipfile_comparator, pipfile_version = self._decompose_full_version(pipfile_full_version)
+        pipfile_lock_comparator, pipfile_lock_version = self._decompose_full_version(pipfile_lock_full_version)
+        self.comparator = pipfile_comparator
+        self.version = pipfile_lock_version
+
 
 REQUIREMENTS_HEADER = """#
 # Please do not manually update this file since the requirements are managed
@@ -366,8 +410,12 @@ def clean_up(items, on_error=on_error):
 
 
 def get_top_level_dependencies():
-    packages = list(Project().parsed_pipfile.get('packages', {}).keys())
-    dev_packages = list(Project().parsed_pipfile.get('dev-packages', {}).keys())
+    pip_packages = Project().parsed_pipfile.get('packages', {}).items()
+    packages = [Package(name_, version_) for name_, version_ in pip_packages]
+    pip_dev_packages = Project().parsed_pipfile.get('dev-packages', {}).items()
+    dev_packages = [Package(name_, version_) for name_, version_ in pip_dev_packages]
+    LOGGER.debug(f"Packages in Pipfile: {packages}")
+    LOGGER.debug(f"Development packages in Pipfile: {dev_packages}")
     return packages, dev_packages
 
 
@@ -399,23 +447,32 @@ def format_marker(marker):
     return f' ; {marker}' if marker else ''
 
 
+def _get_packages(top_level_packages, packages):
+    pkg = []
+    for top_level_package in top_level_packages:
+        package = next((item for item in packages if item.name == top_level_package.name), None)
+        if not package:
+            raise ValueError(f"Package name {top_level_package.name} not found in Pipfile.lock")
+        package.compare_versions(top_level_package.full_version, package.full_version)
+        pkg.append(package)
+    return pkg
+
 def save_requirements():
     top_level_packages, top_level_dev_packages = get_top_level_dependencies()
     all_packages, all_dev_packages = get_all_packages()
-    packages = [package for package in all_packages
-                if package.name in top_level_packages]
-    dev_packages = [package for package in all_dev_packages
-                    if package.name in top_level_dev_packages]
     venv_parent = get_venv_parent_path()
     requirements_file = os.path.join(venv_parent, 'requirements.txt')
     with open(requirements_file, 'w') as f:
-        requirements = '\n'.join([f'{package.name}{package.version.replace("==", "~=")}{format_marker(package.markers)}'
-                                  for package in sorted(packages, key=lambda x: x.name)])
+        requirements = '\n'.join([f'{package.name}{package.full_version}{format_marker(package.markers)}'
+                                  for package in _get_packages(top_level_packages, all_packages)])
+
         f.write(REQUIREMENTS_HEADER + requirements)
     dev_requirements_file = os.path.join(venv_parent, 'dev-requirements.txt')
     with open(dev_requirements_file, 'w') as f:
-        dev_requirements = '\n'.join([f'{package.name}{package.version.replace("==", "~=")}{format_marker(package.markers)}'
-                                      for package in sorted(dev_packages, key=lambda x: x.name)])
+        dev_requirements = '\n'.join(
+            [f'{package.name}{package.full_version}{format_marker(package.markers)}'
+             for package in _get_packages(top_level_dev_packages, all_dev_packages)])
+
         f.write(REQUIREMENTS_HEADER + dev_requirements)
 
 
@@ -498,3 +555,34 @@ class Pushd(object):
 
     def __exit__(self, exception_type, exception_value, traceback):
         os.chdir(self.original_dir)
+
+
+def update_pipfile(stdout: bool):
+    import toml
+    project = Project()
+    LOGGER.debug(f"Processing {project.pipfile_location}")
+
+    top_level_packages, top_level_dev_packages = get_top_level_dependencies()
+    all_packages, all_dev_packages = get_all_packages()
+
+    pipfile = toml.load(project.pipfile_location)
+    configuration = [{'section': 'packages',
+                      'top_level': top_level_packages,
+                      'all_packages': all_packages},
+                     {'section': 'dev-packages',
+                      'top_level': top_level_dev_packages,
+                      'all_packages': all_dev_packages}]
+    for config in configuration:
+        pipfile[config.get('section')] = {package.name: package.full_version
+                                          for package in _get_packages(config.get('top_level'),
+                                                                       config.get('all_packages'))}
+
+    if stdout:
+        LOGGER.debug(f"Outputting Pipfile on stdout")
+        print(toml.dumps(pipfile))
+    else:
+        LOGGER.debug(f"Outputting Pipfile top {project.pipfile_location}")
+        with open(project.pipfile_location, 'w') as writer:
+            writer.write(toml.dumps(pipfile))
+
+    return True

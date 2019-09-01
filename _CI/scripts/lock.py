@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# File: locationsharinglibexceptions.py
+# File: rebuild_pipfile.py
 #
-# Copyright 2017 Costas Tyfoxylos
+# Copyright 2019 Ilija Matoski
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to
@@ -23,28 +23,36 @@
 #  DEALINGS IN THE SOFTWARE.
 #
 
-"""
-Custom exception code for locationsharinglib.
+import logging
+import argparse
 
-.. _Google Python Style Guide:
-   http://google.github.io/styleguide/pyguide.html
+# this sets up everything and MUST be included before any third party module in every step
+import _initialize_template
 
-"""
+from bootstrap import bootstrap
+from library import update_pipfile
 
-__author__ = '''Costas Tyfoxylos <costas.tyf@gmail.com>'''
-__docformat__ = '''google'''
-__date__ = '''2017-12-24'''
-__copyright__ = '''Copyright 2017, Costas Tyfoxylos'''
-__credits__ = ["Costas Tyfoxylos", "Chris Helming"]
-__license__ = '''MIT'''
-__maintainer__ = '''Costas Tyfoxylos'''
-__email__ = '''<costas.tyf@gmail.com>'''
-__status__ = '''Development'''  # "Prototype", "Development", "Production".
+# This is the main prefix used for logging
+LOGGER_BASENAME = '''_CI.build'''
+LOGGER = logging.getLogger(LOGGER_BASENAME)
+LOGGER.addHandler(logging.NullHandler())
 
 
-class InvalidCookies(Exception):
-    """The cookies provided do not provide a valid session."""
+def get_arguments():
+    parser = argparse.ArgumentParser(description='Regenerates Pipfile based on Pipfile.lock')
+    parser.add_argument('--stdout',
+                        help='Output the Pipfile to stdout',
+                        action="store_true",
+                        default=False)
+    args = parser.parse_args()
+    return args
 
 
-class InvalidData(Exception):
-    """The data received do not fit the expected format."""
+def execute():
+    bootstrap()
+    args = get_arguments()
+    return update_pipfile(args.stdout)
+
+
+if __name__ == '__main__':
+    raise SystemExit(not execute())

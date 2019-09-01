@@ -46,5 +46,6 @@ def reset(environment_variables):
     venv = os.path.join(get_project_root_path(), os.path.dirname(pipfile_path), '.venv')
     clean_up(venv)
 
+
 if __name__ == '__main__':
     reset(ENVIRONMENT_VARIABLES)

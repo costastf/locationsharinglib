@@ -7,7 +7,7 @@ name = "pypi"
 
 # Documenting
 sphinx = "~=2.1.2"
-sphinx_rtd_theme = "~=0.4.3"
+sphinx-rtd-theme = "~=0.4.3"
 
 # Linting
 prospector = "==1.1.6.2"

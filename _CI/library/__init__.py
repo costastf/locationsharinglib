@@ -37,4 +37,5 @@ from .core_library import (activate_template,
                            open_file,
                            bump,
                            activate_virtual_environment,
-                           tempdir)
+                           tempdir,
+                           update_pipfile)

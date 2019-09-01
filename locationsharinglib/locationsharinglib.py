@@ -24,7 +24,7 @@
 #
 
 """
-Main code for locationsharinglib
+Main code for locationsharinglib.
 
 .. _Google Python Style Guide:
    http://google.github.io/styleguide/pyguide.html
@@ -70,7 +70,7 @@ ACCOUNT_URL = 'https://myaccount.google.com/?hl=en'
 
 @dataclass
 class Cookie:
-    """Models a cookie"""
+    """Models a cookie."""
 
     domain: str
     flag: bool
@@ -81,7 +81,7 @@ class Cookie:
     value: str
 
     def to_dict(self):
-        """Returns the cookie as a dictionary
+        """Returns the cookie as a dictionary.
 
         Returns:
             cookie (dict): The dictionary with the required values of the cookie
@@ -91,7 +91,7 @@ class Cookie:
 
 
 class Service:
-    """An object modeling the service to retrieve locations"""
+    """An object modeling the service to retrieve locations."""
 
     def __init__(self, cookies_file=None, authenticating_account='unknown@gmail.com'):
         logger_name = u'{base}.{suffix}'.format(base=LOGGER_BASENAME,
@@ -172,7 +172,7 @@ class Service:
         return data
 
     def get_shared_people(self):
-        """Retrieves all people that share their location with this account"""
+        """Retrieves all people that share their location with this account."""
         people = []
         output = self._get_data()
         self._logger.debug(output)
@@ -185,7 +185,7 @@ class Service:
         return people
 
     def get_authenticated_person(self):
-        """Retrieves the person associated with this account"""
+        """Retrieves the person associated with this account."""
         try:
             output = self._get_data()
             self._logger.debug(output)
@@ -216,29 +216,29 @@ class Service:
         return person
 
     def get_all_people(self):
-        """Retrieves all people sharing their location"""
+        """Retrieves all people sharing their location."""
         people = self.get_shared_people() + [self.get_authenticated_person()]
         return filter(None, people)
 
     def get_person_by_nickname(self, nickname):
-        """Retrieves a person by nickname"""
+        """Retrieves a person by nickname."""
         return next((person for person in self.get_all_people()
                      if person.nickname.lower() == nickname.lower()), None)
 
     def get_person_by_full_name(self, name):
-        """Retrieves a person by full name"""
+        """Retrieves a person by full name."""
         return next((person for person in self.get_all_people()
                      if person.full_name.lower() == name.lower()), None)
 
     def get_coordinates_by_nickname(self, nickname):
-        """Retrieves a person's coordinates by nickname"""
+        """Retrieves a person's coordinates by nickname."""
         person = self.get_person_by_nickname(nickname)
         if not person:
             return '', ''
         return person.latitude, person.longitude
 
     def get_coordinates_by_full_name(self, name):
-        """Retrieves a person's coordinates by full name"""
+        """Retrieves a person's coordinates by full name."""
         person = self.get_person_by_full_name(name)
         if not person:
             return '', ''
@@ -246,7 +246,7 @@ class Service:
 
 
 class Person:  # pylint: disable=too-many-instance-attributes
-    """A person sharing its location as coordinates"""
+    """A person sharing its location as coordinates."""
 
     def __init__(self, data):
         logger_name = u'{base}.{suffix}'.format(base=LOGGER_BASENAME,
@@ -304,65 +304,65 @@ class Person:  # pylint: disable=too-many-instance-attributes
 
     @property
     def id(self):  # pylint: disable=invalid-name
-        """The internal google id of the account"""
+        """The internal google id of the account."""
         return self._id or self.full_name
 
     @property
     def picture_url(self):
-        """The url of the person's avatar"""
+        """The url of the person's avatar."""
         return self._picture_url
 
     @property
     def full_name(self):
-        """The full name of the user as set in google"""
+        """The full name of the user as set in google."""
         return self._full_name
 
     @property
     def nickname(self):
-        """The nickname as set in google"""
+        """The nickname as set in google."""
         return self._nickname
 
     @property
     def latitude(self):
-        """The latitude of the person's current location"""
+        """The latitude of the person's current location."""
         return self._latitude
 
     @property
     def longitude(self):
-        """The longitude of the person's current location"""
+        """The longitude of the person's current location."""
         return self._longitude
 
     @property
     def timestamp(self):
-        """The timestamp of the location retrieval"""
+        """The timestamp of the location retrieval."""
         return self._timestamp
 
     @property
     def datetime(self):
-        """A datetime representation of the location retrieval"""
+        """A datetime representation of the location retrieval."""
         return datetime.fromtimestamp(int(self.timestamp) / 1000, tz=pytz.utc)
 
     @property
     def address(self):
-        """The address as reported by google for the current location"""
+        """The address as reported by google for the current location."""
         return self._address
 
     @property
     def country_code(self):
-        """The location's country code"""
+        """The location's country code."""
         return self._country_code
 
     @property
     def accuracy(self):
-        """The accuracy of the gps"""
+        """The accuracy of the gps."""
         return self._accuracy
 
     @property
     def charging(self):
-        """Whether or not the user's device is charging"""
+        """Whether or not the user's device is charging."""
         return bool(self._charging)
 
     @property
     def battery_level(self):
-        """The battery level of the user's device"""
+        """The battery level of the user's device."""
         return self._battery_level

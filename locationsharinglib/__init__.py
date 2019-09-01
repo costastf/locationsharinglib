@@ -24,7 +24,7 @@
 #
 
 """
-locationsharinglib package
+locationsharinglib package.
 
 Import all parts from locationsharinglib here
 
