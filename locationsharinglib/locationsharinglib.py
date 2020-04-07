@@ -156,7 +156,7 @@ class Service:
                           '!1e68!2m2!1sset!2sRoadmap!4e1!5m4!1e4!8m2!1e0!'
                           '1e1!6m9!1e12!2i2!26m1!4b1!30m1!'
                           '1f1.3953487873077393!39b1!44e1!50e0!23i4111425')}
-        url = 'https://www.google.com/maps/preview/locationsharing/read'
+        url = 'https://www.google.com/maps/rpc/locationsharing/read'
         response = self._session.get(url, params=payload, verify=True)
         self._logger.debug(response.text)
         if response.ok:
