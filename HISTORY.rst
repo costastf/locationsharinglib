@@ -31,3 +31,9 @@ History
 ------------------
 
 * Implemented support for text based cookies compatible with curl and wget that can be retrieved from addons from the browser.
+
+
+4.1.1 (22-04-2020)
+------------------
+
+* Updated endpoint to rpc from preview and updated dependencies.
