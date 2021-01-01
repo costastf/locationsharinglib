@@ -50,3 +50,9 @@ History
 ------------------
 
 * Releasing with changes.
+
+
+4.1.5 (01-01-2021)
+------------------
+
+* Aligning New Year's morning blunder release with git tag
