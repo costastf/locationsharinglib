@@ -44,3 +44,9 @@ History
 ------------------
 
 * Changed to authuser setting "2" and loosened up pinning of dependencies.
+
+
+4.1.4 (01-01-2021)
+------------------
+
+* Releasing with changes.
