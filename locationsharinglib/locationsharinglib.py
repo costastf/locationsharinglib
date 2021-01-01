@@ -145,7 +145,7 @@ class Service:
 
     @cached(STATE_CACHE)
     def _get_data(self):
-        payload = {'authuser': 0,
+        payload = {'authuser': 2,
                    'hl': 'en',
                    'gl': 'us',
                    # pd holds the information about the rendering of the map and

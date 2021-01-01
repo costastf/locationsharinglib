@@ -7,8 +7,8 @@
 #
 # Please use Pipfile to update the requirements.
 #
-coloredlogs~=10.0
-requests~=2.21.0
-cachetools~=2.0.1
-pytz~=2019.2
+coloredlogs>=10.0
+requests>=2.25.1
+cachetools>=2.1.0
+pytz>=2020.5
 dataclasses~=0.6 ; python_version == '3.6'
