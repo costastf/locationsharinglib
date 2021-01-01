@@ -37,3 +37,15 @@ History
 ------------------
 
 * Updated endpoint to rpc from preview and updated dependencies.
+
+
+4.1.2 (01-01-2021)
+------------------
+
+* Changed to authuser setting "2" and loosened up pinning of dependencies.
+
+
+4.1.3 (01-01-2021)
+------------------
+
+* Changed to authuser setting "2" and loosened up pinning of dependencies.
