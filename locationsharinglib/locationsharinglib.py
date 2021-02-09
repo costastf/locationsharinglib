@@ -158,16 +158,16 @@ class Service:
                           '1f1.3953487873077393!39b1!44e1!50e0!23i4111425')}
         url = 'https://www.google.com/maps/rpc/locationsharing/read'
         response = self._session.get(url, params=payload, verify=True)
-        self._logger.debug(response.text)
+        self._logger.debug('Response status: %s, body: %s', response.reason, repr(response.text))
         if response.ok:
             try:
                 data = json.loads(response.text.split("'", 1)[1])
             except (ValueError, IndexError, TypeError):
-                self._logger.exception('Unable to parse response :%s',
-                                       response.text)
+                self._logger.exception('Unable to parse response from %s: %s',
+                                       url, response.text)
                 data = ['']
         else:
-            self._logger.warning('Received response code:%s', response.status_code)
+            self._logger.warning('Received response code %s from %s', response.status_code, url)
             data = ['']
         return data
 
@@ -175,7 +175,7 @@ class Service:
         """Retrieves all people that share their location with this account."""
         people = []
         output = self._get_data()
-        self._logger.debug(output)
+        self._logger.debug('Persons: %s', output)
         shared_entries = output[0] or []
         for info in shared_entries:
             try:
@@ -188,7 +188,7 @@ class Service:
         """Retrieves the person associated with this account."""
         try:
             output = self._get_data()
-            self._logger.debug(output)
+            self._logger.debug('Creating person for authenticated account with email %s', self.email)
             person = Person([
                 self.email,
                 output[9][1],
@@ -210,8 +210,8 @@ class Service:
                 None,
                 None,
             ])
-        except (IndexError, TypeError, InvalidData):
-            self._logger.debug('Missing essential info, cannot instantiate authenticated person')
+        except (IndexError, TypeError, InvalidData) as e:
+            self._logger.debug('Missing essential info, cannot instantiate authenticated person %s: %s', self.email, str(e))
             return None
         return person
 
