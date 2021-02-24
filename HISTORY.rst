@@ -56,3 +56,9 @@ History
 ------------------
 
 * Aligning New Year's morning blunder release with git tag
+
+
+4.1.6 (24-02-2021)
+------------------
+
+* More verbose debug messages (courtesy of Dmitry Katsubo <dmitry.katsubo@gmail.com>) and bumped dependencies.
