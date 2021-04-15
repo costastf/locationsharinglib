@@ -210,8 +210,9 @@ class Service:
                 None,
                 None,
             ])
-        except (IndexError, TypeError, InvalidData) as e:
-            self._logger.debug('Missing essential info, cannot instantiate authenticated person %s: %s', self.email, str(e))
+        except (IndexError, TypeError, InvalidData) as err:
+            self._logger.debug('Missing essential info, cannot instantiate authenticated person %s: %s', self.email,
+                               str(err))
             return None
         return person
 
