@@ -68,3 +68,9 @@ History
 ------------------
 
 * Bumped dependencies.
+
+
+4.1.8 (07-07-2021)
+------------------
+
+* Pinned Pipfile version to 3.7
