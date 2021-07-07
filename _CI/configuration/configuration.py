@@ -58,6 +58,6 @@ LOGGERS_TO_DISABLE = ['sh.command',
                       'sh.streamreader',
                       'sh.stream_bufferer']
 
-BRANCHES_SUPPORTED_FOR_TAG = ['master']
+BRANCHES_SUPPORTED_FOR_TAG = ['main']
 
 PROJECT_SLUG = ENVIRONMENT_VARIABLES.get('PROJECT_SLUG')
