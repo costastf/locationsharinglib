@@ -62,3 +62,9 @@ History
 ------------------
 
 * More verbose debug messages (courtesy of Dmitry Katsubo <dmitry.katsubo@gmail.com>) and bumped dependencies.
+
+
+4.1.7 (07-07-2021)
+------------------
+
+* Bumped dependencies.
