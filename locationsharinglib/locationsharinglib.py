@@ -226,6 +226,27 @@ class Service:
         return next((person for person in self.get_all_people()
                      if person.nickname.lower() == nickname.lower()), None)
 
+    def get_latitude_by_nickname(self, nickname):
+        """Retrieves a person's latitude by nickname."""
+        person = self.get_person_by_nickname(nickname)
+        if not person:
+            return '', ''
+        return person.latitude
+
+    def get_longitude_by_nickname(self, nickname):
+        """Retrieves a person's longitude by nickname."""
+        person = self.get_person_by_nickname(nickname)
+        if not person:
+            return '', ''
+        return person.longitude
+
+    def get_timedate_by_nickname(self, nickname):
+        """Retrieves a person's time in unix format by nickname."""
+        person = self.get_person_by_nickname(nickname)
+        if not person:
+            return '', ''
+        return person.timestamp
+
     def get_person_by_full_name(self, name):
         """Retrieves a person by full name."""
         return next((person for person in self.get_all_people()
