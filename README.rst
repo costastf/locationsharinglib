@@ -8,6 +8,41 @@ A library to retrieve coordinates from an google account that has been shared lo
 * Documentation: https://locationsharinglib.readthedocs.org/en/latest
 
 
+
+Getting Started
+====================
+
+Install
+
+
+
+.. code-block:: python
+
+    pip install locationsharinglib
+
+
+Usage:
+
+.. code-block:: python
+
+    from locationsharinglib import Service
+
+    cookies_file = 'cookies.txt'
+    google_email = '<your google username>@gmail.com'
+
+    service = Service(cookies_file=cookies_file, authenticating_account=google_email)
+
+    for person in service.get_all_people():
+        print(person)
+
+
+
+**cookies.txt file**
+
+- You need to sign out, and manually sign into your Google account. Then browse to google.com/maps and extract from your "google.com" cookies and save it as `cookies.txt`
+- Checkout `this chrome extension <https://chrome.google.com/webstore/detail/get-cookiestxt/bgaddhkoddajcdgocldbbfleckgcbcid/related?hl=en>`_ to help export such file very easily
+
+
 Development Workflow
 ====================
 
