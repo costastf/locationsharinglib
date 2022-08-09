@@ -8,10 +8,6 @@ A library to retrieve coordinates from an google account that has been shared lo
 * Documentation: https://locationsharinglib.readthedocs.org/en/latest
 
 
-
-Getting Started
-====================
-
 Install
 
 
@@ -41,6 +37,7 @@ Usage:
 
 - You need to sign out, and manually sign into your Google account. Then browse to google.com/maps and extract from your "google.com" cookies and save it as `cookies.txt`
 - Checkout `this chrome extension <https://chrome.google.com/webstore/detail/get-cookiestxt/bgaddhkoddajcdgocldbbfleckgcbcid/related?hl=en>`_ to help export such file very easily
+- Once `cookies.txt` created, if the Google account will be signed out it **will invalidate the cookies** 
 
 
 Development Workflow
