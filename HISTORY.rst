@@ -80,3 +80,9 @@ History
 ------------------
 
 * Implement default values for cookies.
+
+
+4.2.0 (01-03-2023)
+------------------
+
+* Expose more details.
