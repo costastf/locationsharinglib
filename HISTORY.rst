@@ -74,3 +74,9 @@ History
 ------------------
 
 * Pinned Pipfile version to 3.7
+
+
+4.1.9 (01-03-2023)
+------------------
+
+* Implement default values for cookies.
