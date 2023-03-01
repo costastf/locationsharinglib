@@ -47,7 +47,7 @@ def build():
     success = execute_command('pipenv lock')
     if success:
         LOGGER.info('Successfully created lock file %s %s',
-                     emojize(':white_heavy_check_mark:'),
+                     emojize(':check_mark_button:'),
                      emojize(':thumbs_up:'))
     else:
         LOGGER.error('%s Errors creating lock file! %s',

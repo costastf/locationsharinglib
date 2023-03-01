@@ -37,7 +37,6 @@ LOGGER_BASENAME = '''_CI.build'''
 LOGGER = logging.getLogger(LOGGER_BASENAME)
 LOGGER.addHandler(logging.NullHandler())
 
-
 def get_arguments():
     parser = argparse.ArgumentParser(description='Regenerates Pipfile based on Pipfile.lock')
     parser.add_argument('--stdout',

@@ -58,8 +58,8 @@ LOCAL_VERSION_FILE_PATH = os.path.abspath(
 )
 
 try:
-    with open(VERSION_FILE_PATH) as f:
+    with open(VERSION_FILE_PATH, encoding='utf-8') as f:
         __version__ = f.read()
 except IOError:
-    with open(LOCAL_VERSION_FILE_PATH) as f:
+    with open(LOCAL_VERSION_FILE_PATH, encoding='utf-8') as f:
         __version__ = f.read()

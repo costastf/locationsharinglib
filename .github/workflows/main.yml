@@ -14,12 +14,12 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
-          python-version: 3.7.11
+          python-version: 3.9.15
 
       - name: Install pipenv
         run: pip install pipenv
@@ -41,12 +41,12 @@ jobs:
       name: release
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
-          python-version: 3.7.11
+          python-version: 3.9.15
 
       - name: Install pipenv
         run: pip install pipenv
@@ -55,5 +55,7 @@ jobs:
         run: _CI/scripts/upload.py
 
         env:
+
           PYPI_UPLOAD_USERNAME: ${{ secrets.PYPI_UPLOAD_USERNAME }}
           PYPI_UPLOAD_PASSWORD: ${{ secrets.PYPI_UPLOAD_PASSWORD }}
+

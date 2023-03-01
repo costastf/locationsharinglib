@@ -53,52 +53,58 @@ LOGGER.addHandler(logging.NullHandler())
 class Package:
     def __init__(self,
                  name: str,
-                 full_version: str,
-                 index: str = "",
-                 markers: str = "",
+                 version: str,
+                 index: str = '',
+                 markers: str = '',
                  hashes: list = field(default=list)) -> None:
         self.name = name
         self.index = index
         self.markers = markers
         self.hashes = hashes
-        self.comparator, self.version = self._decompose_full_version(full_version)
+        self.comparator, self.version = self._decompose_full_version(version)
 
     @staticmethod
     def _decompose_full_version(full_version: str) -> (str, str):
-        comparator = ""
-        version = "*"
-        if full_version == "*":
+        comparator = ''
+        version = '*'
+        if full_version == '*':
             return comparator, version
         # We need to check for the most common pinning cases
         # >, <, <=, >=, ~=, ==
         # So we can know where the pin starts and where it ends,
         # iteration should start from 2 character then backwards
         operators = ['<=', '>=', '~=', '==', '<', '>']
-        if isinstance(full_version, dict):
-            full_version = full_version.get('version')
         for operator in operators:
             if full_version.startswith(operator):
                 break
         else:
-            raise ValueError(f"Could not find where the comparator pin ends in {full_version}")
+            raise ValueError(f'Could not find where the comparator pin ends in {full_version}')
         version = full_version[len(operator):]
-
         return operator, version
 
     @property
     def full_version(self):
-        return f"{self.comparator}{self.version}"
+        return f'{self.comparator}{self.version}'
 
     @full_version.setter
     def full_version(self, full_version):
         self.comparator, self.version = self._decompose_full_version(full_version)
 
-    # Processes the two versions both in Pipfile and Pipfile.lock, and matches
-    # the pinning from the Pipfile and the exact version from the Pipfile.lock
     def compare_versions(self, pipfile_full_version, pipfile_lock_full_version):
+        """Processes the two versions both in Pipfile and Pipfile.lock
+
+        Matches the pinning from the Pipfile and the exact version from the Pipfile.lock
+
+        Args:
+            pipfile_full_version (str): The string of the full version specified in the Pipfile
+            pipfile_lock_full_version (str): The string of the full version specified in the Pipfile.lock file
+
+        Returns:
+
+        """
         pipfile_comparator, pipfile_version = self._decompose_full_version(pipfile_full_version)
         pipfile_lock_comparator, pipfile_lock_version = self._decompose_full_version(pipfile_lock_full_version)
-        self.comparator = pipfile_comparator
+        self.comparator = pipfile_comparator if pipfile_comparator else '~='
         self.version = pipfile_lock_version
 
 
@@ -112,6 +118,7 @@ REQUIREMENTS_HEADER = """#
 # Please use Pipfile to update the requirements.
 #
 """
+
 
 def activate_template():
     logging_level = os.environ.get('LOGGING_LEVEL', '').upper() or LOGGING_LEVEL
@@ -139,13 +146,10 @@ def activate_template():
         colored_logs = False
 
 
-
-
-
 # The sequence here is important because it makes sure
 # that the virtual environment is loaded as soon as possible
 def is_venv_created():
-    warnings.simplefilter("ignore", ResourceWarning)
+    warnings.simplefilter('ignore', ResourceWarning)
     dev_null = open(os.devnull, 'w')
     venv = Popen(['pipenv', '--venv'], stdout=PIPE, stderr=dev_null).stdout.read().strip()
     return True if venv else False
@@ -181,6 +185,7 @@ def activate_virtual_environment():
         elif sys.version_info[0] == 2:
             execfile(activation_file, dict(__file__=activation_file))
 
+
 def setup_logging(level):
     try:
         import coloredlogs
@@ -198,6 +203,7 @@ def setup_logging(level):
         LOGGER.setLevel(level.upper())
     for logger in LOGGERS_TO_DISABLE:
         logging.getLogger(logger).disabled = True
+
 
 # TODO extend debug logging in the following methods
 
@@ -392,6 +398,7 @@ def on_error(func, path, exc_info):  # pylint: disable=unused-argument
     else:
         raise  # pylint: disable=misplaced-bare-raise
 
+
 def clean_up(items, on_error=on_error):
     if not isinstance(items, (list, tuple)):
         items = [items]
@@ -411,11 +418,13 @@ def clean_up(items, on_error=on_error):
 
 def get_top_level_dependencies():
     pip_packages = Project().parsed_pipfile.get('packages', {}).items()
-    packages = [Package(name_, version_) for name_, version_ in pip_packages]
+    packages = [Package(name_, version_) if isinstance(version_, str) else Package(name_, **version_)
+                for name_, version_ in pip_packages]
     pip_dev_packages = Project().parsed_pipfile.get('dev-packages', {}).items()
-    dev_packages = [Package(name_, version_) for name_, version_ in pip_dev_packages]
-    LOGGER.debug(f"Packages in Pipfile: {packages}")
-    LOGGER.debug(f"Development packages in Pipfile: {dev_packages}")
+    dev_packages =[Package(name_, version_) if isinstance(version_, str) else Package(name_, **version_)
+                   for name_, version_ in pip_dev_packages]
+    LOGGER.debug(f'Packages in Pipfile: {packages}')
+    LOGGER.debug(f'Development packages in Pipfile: {dev_packages}')
     return packages, dev_packages
 
 
@@ -452,10 +461,11 @@ def _get_packages(top_level_packages, packages):
     for top_level_package in top_level_packages:
         package = next((item for item in packages if item.name == top_level_package.name), None)
         if not package:
-            raise ValueError(f"Package name {top_level_package.name} not found in Pipfile.lock")
+            raise ValueError(f'Package name "{top_level_package.name}" not found in Pipfile.lock')
         package.compare_versions(top_level_package.full_version, package.full_version)
         pkg.append(package)
     return pkg
+
 
 def save_requirements():
     top_level_packages, top_level_dev_packages = get_top_level_dependencies()
@@ -490,7 +500,7 @@ def bump(segment=None, version_file=None):
     try:
         with open(version_file) as version:
             version_text = version.read().strip()
-        _ = semver.parse(version_text)
+        old_version = semver.Version.parse(version_text)
     except FileNotFoundError:
         LOGGER.error('Could not find .VERSION file')
         raise SystemExit(1)
@@ -501,7 +511,7 @@ def bump(segment=None, version_file=None):
         if segment not in ('major', 'minor', 'patch'):
             LOGGER.error('Invalid segment "%s" was provided for semantic versioning, exiting...')
             raise SystemExit(1)
-        new_version = getattr(semver, f'bump_{segment}')(version_text)
+        new_version = getattr(old_version, f'next_{segment}').text
         with open(version_file, 'w') as vfile:
             vfile.write(new_version)
             return new_version
@@ -578,10 +588,10 @@ def update_pipfile(stdout: bool):
                                                                        config.get('all_packages'))}
 
     if stdout:
-        LOGGER.debug(f"Outputting Pipfile on stdout")
+        LOGGER.debug(f'Outputting Pipfile on stdout')
         print(toml.dumps(pipfile))
     else:
-        LOGGER.debug(f"Outputting Pipfile top {project.pipfile_location}")
+        LOGGER.debug(f'Outputting Pipfile top {project.pipfile_location}')
         with open(project.pipfile_location, 'w') as writer:
             writer.write(toml.dumps(pipfile))
 

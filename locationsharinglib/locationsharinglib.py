@@ -78,7 +78,10 @@ class Cookie:
     secure: bool
     expiry: int
     name: str
-    value: str
+    value: str = ''
+    size: str = ''
+    unknown_1: str = ''
+    unknown_2: str = ''
 
     def to_dict(self):
         """Returns the cookie as a dictionary.
@@ -94,9 +97,7 @@ class Service:
     """An object modeling the service to retrieve locations."""
 
     def __init__(self, cookies_file=None, authenticating_account='unknown@gmail.com'):
-        logger_name = u'{base}.{suffix}'.format(base=LOGGER_BASENAME,
-                                                suffix=self.__class__.__name__)
-        self._logger = logging.getLogger(logger_name)
+        self._logger = logging.getLogger(f'{LOGGER_BASENAME}.{self.__class__.__name__}')
         self.email = authenticating_account
         self._session = self._validate_cookie(cookies_file or '')
 
@@ -115,19 +116,18 @@ class Service:
     def _get_authenticated_session(self, cookies_file):
         session = Session()
         try:
-            cfile = open(cookies_file, 'rb')
+            with open(cookies_file, 'rb') as cfile:
+                try:
+                    session.cookies.update(pickle.load(cfile))
+                    self._logger.debug('Successfully loaded pickled cookie!')
+                    warnings.warn('Pickled cookie format is going to be deprecated in a future version, '
+                                  'please start using a text base cookie file!')
+                except (pickle.UnpicklingError, KeyError, AttributeError, EOFError, ValueError):
+                    self._logger.debug('Trying to load text based cookies.')
+                    session = self._load_text_cookies(session, cfile)
         except FileNotFoundError:
             message = 'Could not open cookies file, either file does not exist or no read access.'
-            raise InvalidCookies(message)
-        try:
-            session.cookies.update(pickle.load(cfile))
-            self._logger.debug('Successfully loaded pickled cookie!')
-            warnings.warn('Pickled cookie format is going to be deprecated in a future version, '
-                          'please start using a text base cookie file!')
-        except (pickle.UnpicklingError, KeyError, AttributeError, EOFError, ValueError):
-            self._logger.debug('Trying to load text based cookies.')
-            session = self._load_text_cookies(session, cfile)
-        cfile.close()
+            raise InvalidCookies(message) from None
         return session
 
     def _load_text_cookies(self, session, cookies_file):
@@ -140,7 +140,7 @@ class Service:
         except Exception:
             self._logger.exception('Things broke...')
             message = 'Could not properly load cookie text file.'
-            raise InvalidCookies(message)
+            raise InvalidCookies(message) from None
         return session
 
     @cached(STATE_CACHE)
@@ -246,13 +246,11 @@ class Service:
         return person.latitude, person.longitude
 
 
-class Person:  # pylint: disable=too-many-instance-attributes
+class Person:
     """A person sharing its location as coordinates."""
 
     def __init__(self, data):
-        logger_name = u'{base}.{suffix}'.format(base=LOGGER_BASENAME,
-                                                suffix=self.__class__.__name__)
-        self._logger = logging.getLogger(logger_name)
+        self._logger = logging.getLogger(f'{LOGGER_BASENAME}.{self.__class__.__name__}')
         self._id = None
         self._picture_url = None
         self._full_name = None
@@ -289,18 +287,18 @@ class Person:  # pylint: disable=too-many-instance-attributes
                 self._battery_level = None
         except (IndexError, TypeError):
             self._logger.debug(data)
-            raise InvalidData
+            raise InvalidData from None
 
     def __str__(self):
-        text = (u'Full name        :{}'.format(self.full_name),
-                u'Nickname         :{}'.format(self.nickname),
-                u'Current location :{}'.format(self.address),
-                u'Latitude         :{}'.format(self.latitude),
-                u'Longitude        :{}'.format(self.longitude),
-                u'Datetime         :{}'.format(self.datetime),
-                u'Charging         :{}'.format(self.charging),
-                u'Battery %        :{}'.format(self.battery_level),
-                u'Accuracy         :{}'.format(self._accuracy))
+        text = (f'Full name        :{self.full_name}',
+                f'Nickname         :{self.nickname}',
+                f'Current location :{self.address}',
+                f'Latitude         :{self.latitude}',
+                f'Longitude        :{self.longitude}',
+                f'Datetime         :{self.datetime}',
+                f'Charging         :{self.charging}',
+                f'Battery %        :{self.battery_level}',
+                f'Accuracy         :{self._accuracy}')
         return '\n'.join(text)
 
     @property

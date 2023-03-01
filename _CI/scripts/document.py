@@ -54,7 +54,7 @@ def document():
         except Exception:
             LOGGER.warning('Could not execute UI portion. Maybe running headless?')
         LOGGER.info('%s Successfully built documentation %s',
-                    emojize(':white_heavy_check_mark:'),
+                    emojize(':check_mark_button:'),
                     emojize(':thumbs_up:'))
     else:
         LOGGER.error('%s Documentation creation errors found! %s',

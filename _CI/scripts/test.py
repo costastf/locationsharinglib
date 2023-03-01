@@ -57,7 +57,7 @@ def test():
         LOGGER.warning('Could not execute UI portion. Maybe running headless?')
     if success:
         LOGGER.info('%s No testing errors found! %s',
-                    emojize(':white_heavy_check_mark:'),
+                    emojize(':check_mark_button:'),
                     emojize(':thumbs_up:'))
     else:
         LOGGER.error('%s Testing errors found! %s',

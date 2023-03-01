@@ -39,12 +39,12 @@ def initialize_template_environment():
 
     if not is_venv_created():
         LOGGER.debug('Trying to create virtual environment.')
-        success = execute_command('pipenv install --dev  --ignore-pipfile')
+        success = execute_command(f'pipenv --python {ENVIRONMENT_VARIABLES.get("PIPENV_DEFAULT_PYTHON_VERSION")} install --dev  --ignore-pipfile')
         if success:
             activate_virtual_environment()
             from emoji import emojize
             LOGGER.info('%s Successfully created virtual environment and loaded it! %s',
-                        emojize(':white_heavy_check_mark:'),
+                        emojize(':check_mark_button:'),
                         emojize(':thumbs_up:'))
         else:
             LOGGER.error('Creation of virtual environment failed, cannot continue, '

@@ -29,6 +29,7 @@ import logging
 # this sets up everything and MUST be included before any third party module in every step
 import _initialize_template
 
+from pathlib import Path
 from bootstrap import bootstrap
 from emoji import emojize
 from library import execute_command
@@ -47,11 +48,11 @@ def graph():
                             '-o png '
                             '-A '
                             '-f PUB_ONLY '
-                            '-p graphs {}').format(os.path.join('..', f'{PROJECT_SLUG}'))
+                            f'-p graphs \"{Path("..", PROJECT_SLUG)}\"')
     success = execute_command(create_graph_command)
     if success:
         LOGGER.info('%s Successfully created graph images %s',
-                    emojize(':white_heavy_check_mark:'),
+                    emojize(':check_mark_button:'),
                     emojize(':thumbs_up:'))
     else:
         LOGGER.error('%s Errors in creation of graph images found! %s',
