@@ -112,17 +112,17 @@ class Service:
         return session
 
     def _get_authenticated_session(self, cookies_file):
-        session = Session()
         try:
             with open(cookies_file, 'r', encoding='utf-8') as cfile:
-                session = self._load_text_cookies(session, cfile)
+                session = self._get_session_from_cookie_file(cfile)
         except FileNotFoundError:
             message = 'Could not open cookies file, either file does not exist or no read access.'
             raise InvalidCookies(message) from None
         return session
 
-    def _load_text_cookies(self, session, cookies_file):
+    def _get_session_from_cookie_file(self, cookies_file):
         try:
+            session = Session()
             text = cookies_file.read()
             cookies = [Cookie(*line.strip().split()) for line in text.splitlines()
                        if not line.strip().startswith('#') and line]
