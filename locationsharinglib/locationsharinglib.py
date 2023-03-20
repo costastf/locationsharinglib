@@ -35,8 +35,6 @@ from __future__ import unicode_literals
 
 import json
 import logging
-import pickle
-import warnings
 from dataclasses import dataclass
 from datetime import datetime
 
@@ -116,15 +114,8 @@ class Service:
     def _get_authenticated_session(self, cookies_file):
         session = Session()
         try:
-            with open(cookies_file, 'rb') as cfile:
-                try:
-                    session.cookies.update(pickle.load(cfile))
-                    self._logger.debug('Successfully loaded pickled cookie!')
-                    warnings.warn('Pickled cookie format is going to be deprecated in a future version, '
-                                  'please start using a text base cookie file!')
-                except (pickle.UnpicklingError, KeyError, AttributeError, EOFError, ValueError):
-                    self._logger.debug('Trying to load text based cookies.')
-                    session = self._load_text_cookies(session, cfile)
+            with open(cookies_file, 'r', encoding='utf-8') as cfile:
+                session = self._load_text_cookies(session, cfile)
         except FileNotFoundError:
             message = 'Could not open cookies file, either file does not exist or no read access.'
             raise InvalidCookies(message) from None
@@ -132,7 +123,7 @@ class Service:
 
     def _load_text_cookies(self, session, cookies_file):
         try:
-            text = cookies_file.read().decode('utf-8')
+            text = cookies_file.read()
             cookies = [Cookie(*line.strip().split()) for line in text.splitlines()
                        if not line.strip().startswith('#') and line]
             for cookie in cookies:
