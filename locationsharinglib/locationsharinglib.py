@@ -122,7 +122,7 @@ class Service:
                     self._logger.debug('Successfully loaded pickled cookie!')
                     warnings.warn('Pickled cookie format is going to be deprecated in a future version, '
                                   'please start using a text base cookie file!')
-                except (pickle.UnpicklingError, KeyError, AttributeError, EOFError, ValueError):
+                except (pickle.UnpicklingError, KeyError, AttributeError, EOFError, ValueError, ModuleNotFoundError):
                     self._logger.debug('Trying to load text based cookies.')
                     session = self._load_text_cookies(session, cfile)
         except FileNotFoundError:
