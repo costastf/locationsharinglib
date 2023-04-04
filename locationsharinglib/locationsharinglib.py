@@ -61,9 +61,7 @@ LOGGER = logging.getLogger(LOGGER_BASENAME)
 LOGGER.addHandler(logging.NullHandler())
 
 STATE_CACHING_SECONDS = 30
-
 STATE_CACHE = TTLCache(maxsize=1, ttl=STATE_CACHING_SECONDS)
-ACCOUNT_URL = 'https://myaccount.google.com/?hl=en'
 
 
 @dataclass
