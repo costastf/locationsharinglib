@@ -27,7 +27,7 @@
 Main code for locationsharinglib.
 
 .. _Google Python Style Guide:
-   http://google.github.io/styleguide/pyguide.html
+   https://google.github.io/styleguide/pyguide.html
 
 """
 
@@ -35,8 +35,6 @@ from __future__ import unicode_literals
 
 import json
 import logging
-import pickle
-import warnings
 from dataclasses import dataclass
 from datetime import datetime
 
@@ -44,7 +42,7 @@ import pytz
 from cachetools import TTLCache, cached
 from requests import Session
 
-from .locationsharinglibexceptions import InvalidCookies, InvalidData
+from .locationsharinglibexceptions import InvalidCookies, InvalidData, InvalidCookieFile
 
 __author__ = '''Costas Tyfoxylos <costas.tyf@gmail.com>'''
 __docformat__ = '''google'''
@@ -63,9 +61,8 @@ LOGGER = logging.getLogger(LOGGER_BASENAME)
 LOGGER.addHandler(logging.NullHandler())
 
 STATE_CACHING_SECONDS = 30
-
 STATE_CACHE = TTLCache(maxsize=1, ttl=STATE_CACHING_SECONDS)
-ACCOUNT_URL = 'https://myaccount.google.com/?hl=en'
+VALID_COOKIE_NAMES = {'__Secure-1PSID', '__Secure-3PSID'}
 
 
 @dataclass
@@ -101,50 +98,8 @@ class Service:
         self.email = authenticating_account
         self._session = self._validate_cookie(cookies_file or '')
 
-    def _validate_cookie(self, cookies_file):
-        session = self._get_authenticated_session(cookies_file)
-        response = session.get(ACCOUNT_URL)
-        self._logger.debug('Getting personal account page and its cookies...\n %s', response.content)
-        response = session.get(ACCOUNT_URL)
-        self._logger.debug('Validating access to personal account...')
-        if response.history:
-            message = ('The cookies provided do not provide a valid session, could not reach personal account page.'
-                       'Please create another cookie file and try again.')
-            raise InvalidCookies(message)
-        return session
-
-    def _get_authenticated_session(self, cookies_file):
-        session = Session()
-        try:
-            with open(cookies_file, 'rb') as cfile:
-                try:
-                    session.cookies.update(pickle.load(cfile))
-                    self._logger.debug('Successfully loaded pickled cookie!')
-                    warnings.warn('Pickled cookie format is going to be deprecated in a future version, '
-                                  'please start using a text base cookie file!')
-                except (pickle.UnpicklingError, KeyError, AttributeError, EOFError, ValueError):
-                    self._logger.debug('Trying to load text based cookies.')
-                    session = self._load_text_cookies(session, cfile)
-        except FileNotFoundError:
-            message = 'Could not open cookies file, either file does not exist or no read access.'
-            raise InvalidCookies(message) from None
-        return session
-
-    def _load_text_cookies(self, session, cookies_file):
-        try:
-            text = cookies_file.read().decode('utf-8')
-            cookies = [Cookie(*line.strip().split()) for line in text.splitlines()
-                       if not line.strip().startswith('#') and line]
-            for cookie in cookies:
-                session.cookies.set(**cookie.to_dict())
-        except Exception:
-            self._logger.exception('Things broke...')
-            message = 'Could not properly load cookie text file.'
-            raise InvalidCookies(message) from None
-        return session
-
-    @cached(STATE_CACHE)
-    def _get_data(self):
+    @staticmethod
+    def _get_server_response(session):
         payload = {'authuser': 2,
                    'hl': 'en',
                    'gl': 'us',
@@ -157,19 +112,62 @@ class Service:
                           '1e1!6m9!1e12!2i2!26m1!4b1!30m1!'
                           '1f1.3953487873077393!39b1!44e1!50e0!23i4111425')}
         url = 'https://www.google.com/maps/rpc/locationsharing/read'
-        response = self._session.get(url, params=payload, verify=True)
-        self._logger.debug('Response status: %s, body: %s', response.reason, repr(response.text))
-        if response.ok:
-            try:
-                data = json.loads(response.text.split("'", 1)[1])
-            except (ValueError, IndexError, TypeError):
-                self._logger.exception('Unable to parse response from %s: %s',
-                                       url, response.text)
-                data = ['']
-        else:
-            self._logger.warning('Received response code %s from %s', response.status_code, url)
-            data = ['']
+        return session.get(url, params=payload, verify=True)
+
+    @staticmethod
+    def _parse_location_data(data):
+        try:
+            data = json.loads(data.split("'", 1)[1])
+        except (ValueError, IndexError, TypeError):
+            raise InvalidData(f'Received invalid data: {data}, cannot parse properly.') from None
         return data
+
+    @staticmethod
+    def _get_session_from_cookie_file(cookies_file):
+        try:
+            session = Session()
+            cookies = [Cookie(*line.strip().split()) for line in cookies_file.read().splitlines()
+                       if not line.strip().startswith('#') and line]
+            if not any(valid_name in {cookie.name for cookie in cookies} for valid_name in VALID_COOKIE_NAMES):
+                raise InvalidCookies(f'Missing either of {VALID_COOKIE_NAMES} cookies!')
+            for cookie in cookies:
+                session.cookies.set(**cookie.to_dict())
+        except TypeError:
+            LOGGER.exception('Things broke...')
+            raise InvalidCookieFile('Could not properly load cookie text file.') from None
+        return session
+
+    def _get_authenticated_session(self, cookies_file):
+        try:
+            with open(cookies_file, 'r', encoding='utf-8') as cfile:
+                session = self._get_session_from_cookie_file(cfile)
+        except FileNotFoundError:
+            message = 'Could not open cookies file, either file does not exist or no read access.'
+            raise InvalidCookieFile(message) from None
+        return session
+
+    def _validate_cookie(self, cookies_file):
+        session = self._get_authenticated_session(cookies_file)
+        data = self._parse_location_data(self._get_server_response(session).text)
+        try:
+            # it seems that if the 6th field of the data on the response is 'GgA=' then the session is not properly
+            # authenticated so we use that heuristic for now which is less intrusive than reaching out to the personal
+            # console of the user to check for a valid session.
+            auth_field = data[6]
+        except IndexError:
+            raise InvalidData(f'Could not read 6th field of data, it seems invalid {data}') from None
+        if auth_field == 'GgA=':
+            raise InvalidCookies('Does not seem we have a valid session.')
+        return session
+
+    @cached(STATE_CACHE)
+    def _get_data(self):
+        response = self._get_server_response(self._session)
+        self._logger.debug(f'Response status: {response.status_code}, body: {response.text}')
+        if not response.ok:
+            self._logger.warning(f'Received response code {response.status_code} with context {response.text}')
+            return ['']
+        return self._parse_location_data(response.text)
 
     def get_shared_people(self):
         """Retrieves all people that share their location with this account."""

@@ -10,5 +10,5 @@
 coloredlogs>=15.0.1
 requests>=2.28.2
 cachetools>=5.3.0
-pytz>=2022.7.1
+pytz>=2023.3
 dataclasses~=0.6 ; python_version == '3.6'
