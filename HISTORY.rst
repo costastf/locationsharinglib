@@ -86,3 +86,9 @@ History
 ------------------
 
 * Expose more details.
+
+
+5.0.0 (04-04-2023)
+------------------
+
+* Implement better session validation heuristic, checking from cookies. Remove obsolete pickle cookie loading.
