@@ -62,6 +62,7 @@ LOGGER.addHandler(logging.NullHandler())
 
 STATE_CACHING_SECONDS = 30
 STATE_CACHE = TTLCache(maxsize=1, ttl=STATE_CACHING_SECONDS)
+VALID_COOKIE_NAMES = {'__Secure-1PSID', '__Secure-3PSID'}
 
 
 @dataclass
@@ -127,9 +128,11 @@ class Service:
             session = Session()
             cookies = [Cookie(*line.strip().split()) for line in cookies_file.read().splitlines()
                        if not line.strip().startswith('#') and line]
+            if not any(valid_name in {cookie.name for cookie in cookies} for valid_name in VALID_COOKIE_NAMES):
+                raise InvalidCookies(f'Missing either of {VALID_COOKIE_NAMES} cookies!')
             for cookie in cookies:
                 session.cookies.set(**cookie.to_dict())
-        except Exception:
+        except TypeError:
             LOGGER.exception('Things broke...')
             raise InvalidCookieFile('Could not properly load cookie text file.') from None
         return session
