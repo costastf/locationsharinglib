@@ -27,7 +27,7 @@
 Custom exception code for locationsharinglib.
 
 .. _Google Python Style Guide:
-   http://google.github.io/styleguide/pyguide.html
+   https://google.github.io/styleguide/pyguide.html
 
 """
 
