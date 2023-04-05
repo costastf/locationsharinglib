@@ -122,10 +122,10 @@ class Service:
         return data
 
     @staticmethod
-    def _get_session_from_cookie_file(cookies_file):
+    def _get_session_from_cookie_file(cookies_file_contents):
         try:
             session = Session()
-            cookie_entries = [line.strip() for line in cookies_file.read().splitlines()
+            cookie_entries = [line.strip() for line in cookies_file_contents.splitlines()
                               if not line.strip().startswith('#') and line]
             cookies = []
             for entry in cookie_entries:
@@ -143,7 +143,7 @@ class Service:
     def _get_authenticated_session(self, cookies_file):
         try:
             with open(cookies_file, 'r', encoding='utf-8') as cfile:
-                session = self._get_session_from_cookie_file(cfile)
+                session = self._get_session_from_cookie_file(cfile.read())
         except FileNotFoundError:
             message = 'Could not open cookies file, either file does not exist or no read access.'
             raise InvalidCookieFile(message) from None
