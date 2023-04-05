@@ -35,8 +35,9 @@ from __future__ import unicode_literals
 
 import json
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
+from typing import List
 
 import pytz
 from cachetools import TTLCache, cached
@@ -76,9 +77,7 @@ class Cookie:
     expiry: int
     name: str
     value: str = ''
-    size: str = ''
-    unknown_1: str = ''
-    unknown_2: str = ''
+    rest: List = field(default_factory=list)
 
     def to_dict(self):
         """Returns the cookie as a dictionary.
@@ -126,8 +125,12 @@ class Service:
     def _get_session_from_cookie_file(cookies_file):
         try:
             session = Session()
-            cookies = [Cookie(*line.strip().split()) for line in cookies_file.read().splitlines()
-                       if not line.strip().startswith('#') and line]
+            cookie_entries = [line.strip() for line in cookies_file.read().splitlines()
+                              if not line.strip().startswith('#') and line]
+            cookies = []
+            for entry in cookie_entries:
+                domain, flag, path, secure, expiry, name, value, *rest = entry.split()
+                cookies.append(Cookie(domain, flag, path, secure, expiry, name, value, rest))
             if not any(valid_name in {cookie.name for cookie in cookies} for valid_name in VALID_COOKIE_NAMES):
                 raise InvalidCookies(f'Missing either of {VALID_COOKIE_NAMES} cookies!')
             for cookie in cookies:
