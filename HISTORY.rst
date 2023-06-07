@@ -98,3 +98,9 @@ History
 ------------------
 
 * Implement better foreign cookie handling.
+
+
+5.0.2 (07-06-2023)
+------------------
+
+* Bump dependencies for proxy header leak in requests.
