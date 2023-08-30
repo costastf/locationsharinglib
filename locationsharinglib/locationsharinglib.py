@@ -96,6 +96,7 @@ class Service:
         self._logger = logging.getLogger(f'{LOGGER_BASENAME}.{self.__class__.__name__}')
         self.email = authenticating_account
         self._session = self._validate_cookie(cookies_file or '')
+        self._session.hooks['response'].append(self._observe_set_cookies(self))
 
     @staticmethod
     def _get_server_response(session):
@@ -120,6 +121,14 @@ class Service:
         except (ValueError, IndexError, TypeError):
             raise InvalidData(f'Received invalid data: {data}, cannot parse properly.') from None
         return data
+
+    @staticmethod
+    def _observe_set_cookies(server):
+        def _observe_closure(response, *args, **kwargs):
+            if (cookies := response.headers.get('Set-Cookie')):
+                server._logger.info(f'Got set cookie {cookies}')  # noqa
+            return response
+        return _observe_closure
 
     @staticmethod
     def _get_session_from_cookie_file(cookies_file_contents):
