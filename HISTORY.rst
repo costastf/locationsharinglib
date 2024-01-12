@@ -104,3 +104,9 @@ History
 ------------------
 
 * Bump dependencies for proxy header leak in requests.
+
+
+5.0.3 (12-01-2024)
+------------------
+
+* Bump dependencies.
